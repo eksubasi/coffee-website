@@ -5,6 +5,7 @@ Django + Django REST Framework API for Brewnook.
 | Path | Purpose |
 | --- | --- |
 | `config/` | Django project package: URLs, WSGI/ASGI entry points, settings |
+| `accounts/` | Custom `User` model (email login, roles) |
 | `core/` | Cross-cutting endpoints such as the health check |
 | `catalog/` | Products and categories: models, `seed_catalog` command, public catalog API |
 | `requirements.txt` | Pinned Python dependencies |
