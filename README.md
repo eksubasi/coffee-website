@@ -162,10 +162,11 @@ cd coffee-website
 ### 2. Configure environment variables
 
 ```bash
-cp .env.example .env
+cp backend/.env.example backend/.env
 ```
 
 The example values are for local development only. Do not commit `.env`.
+See `backend/README.md` for the full list of environment variables.
 
 ### 3. Start PostgreSQL and Redis
 
