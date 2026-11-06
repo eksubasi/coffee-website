@@ -1,7 +1,15 @@
 import pytest
 from django.contrib.auth import authenticate, get_user_model
+from django.core.management import call_command
 
 User = get_user_model()
+
+SEEDED_EMAILS = {
+    "customer@brewnook.dev",
+    "sales@brewnook.dev",
+    "product@brewnook.dev",
+    "support@brewnook.dev",
+}
 
 
 def test_email_is_the_login_field():
@@ -66,3 +74,18 @@ def test_create_superuser_rejects_non_staff():
             email="admin@brewnook.dev", password="x", is_staff=False
         )
 
+
+@pytest.mark.django_db
+def test_seed_users_is_idempotent(monkeypatch, capsys):
+    monkeypatch.setenv("DEMO_PASSWORD", "seed-test-password")
+
+    call_command("seed_users")
+    call_command("seed_users")
+    output = capsys.readouterr().out
+
+    users = User.objects.filter(email__in=SEEDED_EMAILS)
+    assert users.count() == 4
+    assert User.objects.count() == 4
+    assert {user.role for user in users} == set(User.Role.values)
+    assert all(user.check_password("seed-test-password") for user in users)
+    assert "seed-test-password" not in output

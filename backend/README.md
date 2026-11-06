@@ -5,7 +5,7 @@ Django + Django REST Framework API for Brewnook.
 | Path | Purpose |
 | --- | --- |
 | `config/` | Django project package: URLs, WSGI/ASGI entry points, settings |
-| `accounts/` | Custom `User` model (email login, roles) |
+| `accounts/` | Custom `User` model (email login, roles) and `seed_users` command |
 | `core/` | Cross-cutting endpoints such as the health check |
 | `catalog/` | Products and categories: models, `seed_catalog` command, public catalog API |
 | `requirements.txt` | Pinned Python dependencies |
@@ -22,7 +22,17 @@ Django + Django REST Framework API for Brewnook.
 | `SECRET_KEY` | all | Django secret key |
 | `DATABASE_URL` | all | PostgreSQL connection URL |
 | `CORS_ALLOWED_ORIGINS` | all | Comma-separated origins (dev defaults to the Vite server on port 5173) |
+| `DEMO_PASSWORD` | `seed_users` | Password for demo users (default `brewnook-demo`) |
 | `ALLOWED_HOSTS` | prod | Comma-separated host names (required) |
+
+## Demo users
+
+```bash
+python manage.py seed_users
+```
+
+Creates one user per role (see `accounts/management/commands/README.md`).
+Safe to run repeatedly.
 
 ## Tests
 
