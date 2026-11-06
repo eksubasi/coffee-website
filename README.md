@@ -145,16 +145,98 @@ Payments will be simulated for the course project.
 
 ## Getting Started
 
-Installation commands, dependency versions, environment variables, and startup instructions will be added as the application infrastructure is implemented.
+### Prerequisites
 
-The planned local development environment requires:
+- Python 3.12
+- Node.js 22.12 or newer within the 22.x release line
+- Git
+- Docker Desktop, running
 
-- Python
-- Node.js and a package manager
-- Docker for PostgreSQL
-- Redis when testing communication across multiple server processes
+### 1. Clone the repository
 
-The initial product spreadsheet will serve as the source for development and demo data.
+```bash
+git clone https://github.com/eksubasi/coffee-website.git
+cd coffee-website
+```
+
+### 2. Configure environment variables
+
+```bash
+cp .env.example .env
+```
+
+The example values are for local development only. Do not commit `.env`.
+
+### 3. Start PostgreSQL and Redis
+
+```bash
+docker compose up -d --wait
+docker compose ps
+```
+
+Both services should report healthy.
+
+### 4. Set up and start the backend
+
+Create a virtual environment using your Python 3.12 interpreter:
+
+```bash
+cd backend
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
+
+If Python 3.12 is available through Conda, activate that environment
+and use `python -m venv .venv` instead of `python3.12 -m venv .venv`.
+Then deactivate Conda and activate `.venv` before continuing.
+
+Backend: http://localhost:8000
+
+### 5. Set up and start the frontend
+
+Open another terminal at the repository root:
+
+```bash
+cd frontend
+npm ci
+npm run dev
+```
+
+Open the local URL printed by Vite, usually http://localhost:5173.
+
+### Development checks
+
+From `backend/`, with the virtual environment active:
+
+```bash
+python manage.py check
+```
+
+From `frontend/`:
+
+```bash
+npm run lint
+npm run build
+```
+
+### Stopping the services
+
+Stop the backend and frontend servers with Control+C in their terminals.
+
+From the repository root:
+
+```bash
+docker compose down
+```
+
+This preserves the PostgreSQL data volume.
+Using `docker compose down -v` also deletes the local database volume.
+
+The initial product spreadsheet will serve as the source for
+development and demo data.
 
 ## Development Workflow
 
@@ -169,11 +251,14 @@ The planned workflow is:
 5. Obtain at least one teammate's review before merging into `main`.
 6. Update the Jira issue after completion.
 
-Suggested branch naming:
+Branch naming follows `name/issue-key/type/description`, for example:
 
-- `feature/<issue-key>-short-description`
-- `fix/<issue-key>-short-description`
-- `docs/<issue-key>-short-description`
+- `emir/KAN-16/chore/project-setup`
+- `emir/KAN-21/ci/github-actions`
+- `emir/KAN-32/spike/channels-echo`
+
+Commit messages should be descriptive and focused, for example:
+`chore: configure local development services`.
 
 Changes affecting shared APIs, database schemas, or common UI components should be coordinated with the team.
 
