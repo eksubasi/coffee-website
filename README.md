@@ -162,10 +162,11 @@ cd coffee-website
 ### 2. Configure environment variables
 
 ```bash
-cp .env.example .env
+cp backend/.env.example backend/.env
 ```
 
 The example values are for local development only. Do not commit `.env`.
+See `backend/README.md` for the full list of environment variables.
 
 ### 3. Start PostgreSQL and Redis
 
@@ -195,6 +196,9 @@ Then deactivate Conda and activate `.venv` before continuing.
 
 Backend: http://localhost:8000
 
+Health check: http://localhost:8000/api/health should return
+`{"status":"ok","db":true}`.
+
 ### 5. Set up and start the frontend
 
 Open another terminal at the repository root:
@@ -213,6 +217,7 @@ From `backend/`, with the virtual environment active:
 
 ```bash
 python manage.py check
+pytest
 ```
 
 From `frontend/`:
