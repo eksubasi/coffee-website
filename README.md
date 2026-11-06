@@ -196,6 +196,9 @@ Then deactivate Conda and activate `.venv` before continuing.
 
 Backend: http://localhost:8000
 
+Health check: http://localhost:8000/api/health should return
+`{"status":"ok","db":true}`.
+
 ### 5. Set up and start the frontend
 
 Open another terminal at the repository root:
@@ -214,6 +217,7 @@ From `backend/`, with the virtual environment active:
 
 ```bash
 python manage.py check
+pytest
 ```
 
 From `frontend/`:
