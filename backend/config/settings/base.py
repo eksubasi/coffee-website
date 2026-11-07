@@ -6,6 +6,7 @@ differ per machine or contain secrets are read from environment variables
 (optionally loaded from backend/.env).
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
@@ -35,6 +36,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
     "core",
     "catalog",
     "accounts",
@@ -103,16 +105,43 @@ AUTH_PASSWORD_VALIDATORS = [
 # CORS
 
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
+# Required so the browser sends the httpOnly refresh-token cookie.
+CORS_ALLOW_CREDENTIALS = True
 
 
 # Django REST Framework
 
 REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 24,
+}
+
+
+# JWT authentication (SimpleJWT)
+# The access token is returned in the response body; the refresh token is
+# only ever sent as an httpOnly cookie scoped to the auth endpoints.
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+AUTH_REFRESH_COOKIE = {
+    "key": "refresh_token",
+    "path": "/api/auth/",
+    "httponly": True,
+    "secure": True,
+    "samesite": env("AUTH_REFRESH_COOKIE_SAMESITE", default="Lax"),
 }
 
 

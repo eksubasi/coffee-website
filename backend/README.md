@@ -5,7 +5,7 @@ Django + Django REST Framework API for Brewnook.
 | Path | Purpose |
 | --- | --- |
 | `config/` | Django project package: URLs, WSGI/ASGI entry points, settings |
-| `accounts/` | Custom `User` model (email login, roles) and `seed_users` command |
+| `accounts/` | Custom `User` model (email login, roles), JWT auth API, `seed_users` command |
 | `core/` | Cross-cutting endpoints such as the health check |
 | `catalog/` | Products and categories: models, `seed_catalog` command, public catalog API |
 | `requirements.txt` | Pinned Python dependencies |
@@ -24,6 +24,7 @@ Django + Django REST Framework API for Brewnook.
 | `CORS_ALLOWED_ORIGINS` | all | Comma-separated origins (dev defaults to the Vite server on port 5173) |
 | `DEMO_PASSWORD` | `seed_users` | Password for demo users (default `brewnook-demo`) |
 | `ALLOWED_HOSTS` | prod | Comma-separated host names (required) |
+| `AUTH_REFRESH_COOKIE_SAMESITE` | all | SameSite for the refresh cookie (default `Lax`) |
 
 ## Demo users
 
