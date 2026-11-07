@@ -36,7 +36,8 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "core",
-    "catalog"
+    "catalog",
+    "accounts",
 ]
 
 MIDDLEWARE = [
@@ -82,9 +83,7 @@ DATABASES = {
 
 # Authentication
 
-# KAN-36: set AUTH_USER_MODEL to the custom user model here, before the
-# first migration that depends on the user table.
-# AUTH_USER_MODEL = "accounts.User"
+AUTH_USER_MODEL = "accounts.User"
 
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.Argon2PasswordHasher",
