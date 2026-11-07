@@ -94,6 +94,16 @@ def test_login_returns_access_token_and_httponly_refresh_cookie(api, customer):
 
 
 @pytest.mark.django_db
+def test_login_updates_last_login(api, customer):
+    assert customer.last_login is None
+
+    login(api)
+
+    customer.refresh_from_db()
+    assert customer.last_login is not None
+
+
+@pytest.mark.django_db
 @pytest.mark.parametrize(
     "email,password",
     [("ada@brewnook.dev", "wrong-password"), ("nobody@brewnook.dev", STRONG_PASSWORD)],

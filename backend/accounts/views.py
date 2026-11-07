@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import update_last_login
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -69,6 +70,8 @@ class LoginView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
+        # SimpleJWT's UPDATE_LAST_LOGIN only applies to its own serializers.
+        update_last_login(None, user)
         refresh = RefreshToken.for_user(user)
         response = Response(
             {"access": str(refresh.access_token), "user": UserSerializer(user).data}
