@@ -197,3 +197,45 @@ def test_order_item_total_price(products, customer):
 
     assert item.total_price == Decimal("751.50")
     assert item.delivery.total_price == Decimal("751.50")
+
+
+# --- KAN-53: edge cases -------------------------------------------------------
+
+
+def test_delivery_list_shows_open_deliveries_first(pm, order):
+    first_item = order.items.order_by("id").first()
+    complete_delivery(first_item.delivery.id)
+
+    rows = pm.get(reverse("delivery-list")).json()["results"]
+
+    assert [row["is_completed"] for row in rows] == [False, True]
+
+
+def test_delivery_keeps_address_snapshot_when_order_address_changes(order):
+    original = order.address
+    order.address = "2 Changed Avenue"
+    order.save()
+
+    assert all(d.delivery_address == original for d in Delivery.objects.filter(order_item__order=order))
+
+
+def test_product_with_orders_cannot_be_deleted(order, products):
+    from django.db.models import ProtectedError
+
+    with pytest.raises(ProtectedError):
+        products[0].delete()
+
+
+def test_order_without_items_can_be_marked_delivered(pm, customer):
+    empty = Order.objects.create(user=customer, address="x")
+
+    response = pm.patch(reverse("order-status", args=[empty.id]), {"status": "delivered"}, format="json")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "delivered"
+
+
+def test_complete_endpoint_rejects_get(pm, order):
+    delivery = order.items.first().delivery
+
+    assert pm.get(reverse("delivery-complete", args=[delivery.id])).status_code == 405

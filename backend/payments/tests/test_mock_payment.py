@@ -138,3 +138,58 @@ def test_only_customers_can_pay(role):
 
 def test_anonymous_cannot_pay():
     assert APIClient().post(reverse("payments-mock"), payload(), format="json").status_code == 401
+
+
+# --- KAN-53: edge cases -------------------------------------------------------
+
+AMEX = "378282246310005"  # 15-digit test number, passes Luhn
+
+
+def test_fifteen_digit_card_with_four_digit_cvv_is_approved():
+    client, _ = client_for()
+
+    response = pay(client, card_number=AMEX, cvv="1234")
+
+    assert response.status_code == 201
+    assert response.json()["last4"] == "0005"
+
+
+def test_same_card_for_two_customers_creates_separate_token_rows():
+    first_client, first_user = client_for()
+    second_user = User.objects.create_user(email="second@pay.test", password="x")
+    second_client = APIClient()
+    second_client.force_authenticate(user=second_user)
+
+    pay(first_client)
+    pay(second_client)
+
+    assert PaymentToken.objects.filter(user=first_user).count() == 1
+    assert PaymentToken.objects.filter(user=second_user).count() == 1
+
+
+def test_token_depends_on_secret_key(settings):
+    from payments.cards import card_token
+
+    settings.SECRET_KEY = "secret-one"
+    first = card_token(PAN)
+    settings.SECRET_KEY = "secret-two"
+
+    assert card_token(PAN) != first
+
+
+@pytest.mark.parametrize("missing", ["card_number", "expiry", "cvv", "holder"])
+def test_missing_field_is_rejected(missing):
+    client, _ = client_for()
+    data = payload()
+    del data[missing]
+
+    response = client.post(reverse("payments-mock"), data, format="json")
+
+    assert response.status_code == 400
+    assert missing in response.json()
+
+
+def test_get_is_not_allowed():
+    client, _ = client_for()
+
+    assert client.get(reverse("payments-mock")).status_code == 405

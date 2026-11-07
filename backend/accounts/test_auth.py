@@ -168,3 +168,63 @@ def test_logout_clears_cookie_and_blacklists_refresh_token(api, customer):
     assert response.cookies[COOKIE].value == ""
     api.cookies[COOKIE] = refresh
     assert api.post(reverse("auth-refresh")).status_code == 401
+
+
+# --- KAN-53: edge cases -------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_inactive_user_cannot_log_in(api, customer):
+    customer.is_active = False
+    customer.save()
+
+    response = login(api)
+
+    assert response.status_code == 401
+    assert COOKIE not in response.cookies
+
+
+@pytest.mark.django_db
+def test_access_token_cannot_be_used_as_refresh_token(api, customer):
+    access = login(api).json()["access"]
+    api.cookies[COOKIE] = access
+
+    assert api.post(reverse("auth-refresh")).status_code == 401
+
+
+@pytest.mark.django_db
+def test_refresh_token_cannot_be_used_as_access_token(api, customer):
+    refresh = login(api).cookies[COOKIE].value
+
+    api.credentials(HTTP_AUTHORIZATION=f"Bearer {refresh}")
+
+    assert api.get(reverse("auth-me")).status_code == 401
+
+
+@pytest.mark.django_db
+def test_register_ignores_privilege_fields(api):
+    response = api.post(
+        reverse("auth-register"),
+        {
+            "email": "sneaky@brewnook.dev",
+            "password": STRONG_PASSWORD,
+            "is_staff": True,
+            "is_superuser": True,
+        },
+        format="json",
+    )
+
+    assert response.status_code == 201
+    user = User.objects.get(email="sneaky@brewnook.dev")
+    assert user.is_staff is False
+    assert user.is_superuser is False
+
+
+@pytest.mark.django_db
+def test_tampered_access_token_is_rejected(api, customer):
+    access = login(api).json()["access"]
+    tampered = access[:-2] + ("AA" if access[-2:] != "AA" else "BB")
+
+    api.credentials(HTTP_AUTHORIZATION=f"Bearer {tampered}")
+
+    assert api.get(reverse("auth-me")).status_code == 401
