@@ -13,3 +13,6 @@ CORS_ALLOWED_ORIGINS = env.list(
 )
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# Local development runs over plain HTTP.
+AUTH_REFRESH_COOKIE = {**AUTH_REFRESH_COOKIE, "secure": False}  # noqa: F405
