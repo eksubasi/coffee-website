@@ -8,6 +8,7 @@ Django + Django REST Framework API for Brewnook.
 | `accounts/` | Custom `User` model (email login, roles), JWT auth API, `seed_users` command |
 | `core/` | Cross-cutting endpoints such as the health check |
 | `payments/` | Mock bank endpoint and hashed card tokens |
+| `orders/` | Orders, order items and deliveries (product-manager endpoints) |
 | `catalog/` | Products and categories: models, `seed_catalog` command, public catalog API |
 | `requirements.txt` | Pinned Python dependencies |
 | `.env.example` | Template for `backend/.env` (local values only) |
