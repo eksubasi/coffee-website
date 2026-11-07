@@ -6,6 +6,8 @@ Custom user model and account-related code.
   `tax_id`, `home_address`, `role`).
 - `managers.py`: `UserManager` with email-based `create_user` / `create_superuser`.
 - `serializers.py`, `views.py`, `urls.py`: auth API under `/api/auth/`.
+- `permissions.py`: `IsCustomer`, `IsSalesManager`, `IsProductManager`,
+  `IsSupportAgent` (see `docs/role-matrix.md`).
 - `management/commands/seed_users.py`: demo users, one per role.
 
 Roles (`User.Role`): `customer` (default), `sales_manager`,
