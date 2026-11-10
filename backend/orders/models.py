@@ -1,18 +1,19 @@
+from decimal import Decimal
+
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 
-
 class Order(models.Model):
-    # TODO(KAN-40): minimal Order for deliveries (KAN-45). Checkout, totals,
-    # payment reference, invoice and cancellation/stock restore belong to
-    # KAN-40 and should extend this model rather than replace it.
+    
 
     class Status(models.TextChoices):
         PROCESSING = "processing", "Processing"
         IN_TRANSIT = "in-transit", "In transit"
         DELIVERED = "delivered", "Delivered"
         CANCELLED = "cancelled", "Cancelled"
+        REFUNDED = "refunded", "Refunded"
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="orders"
@@ -30,11 +31,16 @@ class Order(models.Model):
     def __str__(self):
         return f"Order #{self.pk} ({self.status})"
 
+    @property
+    def total_price(self):
+        """Sum of the item totals. Items cannot change, so neither can this."""
+        return sum((item.total_price for item in self.items.all()), Decimal("0.00"))
+
 
 class OrderItem(models.Model):
-    # TODO(KAN-40): add any checkout-specific fields (e.g. discount applied).
-    # unit_price is the purchase-time price and must not follow later price
-    # changes (invoices and refunds use it).
+
+    PRICE_SNAPSHOT_FIELDS = ("unit_price", "discount_rate")
+
 
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(
@@ -42,6 +48,10 @@ class OrderItem(models.Model):
     )
     quantity = models.PositiveIntegerField()
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    discount_rate = models.DecimalField(
+        max_digits=5, decimal_places=4, default=Decimal("0"))
+
 
     class Meta:
         constraints = [
@@ -51,10 +61,34 @@ class OrderItem(models.Model):
             models.CheckConstraint(
                 condition=Q(unit_price__gte=0), name="order_item_unit_price_non_negative"
             ),
+            models.CheckConstraint(
+                condition=Q(discount_rate__gte=0) & Q(discount_rate__lte=1),
+                name="order_item_discount_rate_between_0_and_1",
+            ),
         ]
 
     def __str__(self):
         return f"{self.quantity} x {self.product_id} (order #{self.order_id})"
+
+    def save(self, *args, **kwargs):
+        if self.pk is not None:
+            saved = (
+                OrderItem.objects.filter(pk=self.pk)
+                .values(*self.PRICE_SNAPSHOT_FIELDS)
+                .first()
+            )
+            if saved is not None:
+                changed = [
+                    field
+                    for field in self.PRICE_SNAPSHOT_FIELDS
+                    if getattr(self, field) != saved[field]
+                ]
+                if changed:
+                    raise ValidationError(
+                        f"Purchase-time prices cannot be changed: {', '.join(changed)}."
+                    )
+        super().save(*args, **kwargs)
+    
 
     @property
     def total_price(self):
