@@ -1,5 +1,5 @@
 from rest_framework import serializers
-
+from payments.models import PaymentToken
 from .models import Delivery, Order, OrderItem
 
 class DeliverySerializer(serializers.ModelSerializer):
@@ -65,3 +65,25 @@ class CustomerOrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = ["id", "status", "address", "total_price", "items", "created_at", "updated_at"]
         read_only_fields = fields
+        
+class CheckoutSerializer(serializers.Serializer):
+    """Body of POST /api/checkout:
+    {"payment_token": "<from POST /api/payments/mock>", "address": "..."}
+    address is optional; the customer's home address is used when it is empty."""
+
+    payment_token = serializers.CharField()
+    address = serializers.CharField(required=False, allow_blank=True)
+
+    def validate_payment_token(self, value):
+        user = self.context["request"].user
+        token = PaymentToken.objects.filter(user=user, token=value).first()
+        if token is None:
+            raise serializers.ValidationError("Unknown payment token. Pay first.")
+        return token
+
+    def validate(self, data):
+        address = data.get("address", "").strip() or self.context["request"].user.home_address
+        if not address:
+            raise serializers.ValidationError({"address": "A delivery address is required."})
+        data["address"] = address
+        return data
