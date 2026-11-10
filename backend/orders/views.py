@@ -4,10 +4,15 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.permissions import IsProductManager
+from accounts.permissions import IsCustomer, IsProductManager
 
 from .models import Delivery, Order
-from .serializers import DeliverySerializer, OrderSerializer, OrderStatusSerializer
+from .serializers import (
+    CustomerOrderSerializer,
+    DeliverySerializer,
+    OrderSerializer,
+    OrderStatusSerializer,
+)
 from .services import StatusChangeError, change_order_status, complete_delivery
 
 
@@ -56,3 +61,25 @@ class OrderStatusView(APIView):
         except StatusChangeError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_409_CONFLICT)
         return Response(OrderSerializer(order).data)
+
+
+class CustomerOrderMixin:
+    """Customers only ever see their own orders; others get 404, not 403,
+    so order ids of other users are not revealed."""
+
+    permission_classes = [IsCustomer]
+    serializer_class = CustomerOrderSerializer
+
+    def get_queryset(self):
+        return (
+            Order.objects.filter(user=self.request.user)
+            .prefetch_related("items__product")
+        )
+
+
+class CustomerOrderListView(CustomerOrderMixin, generics.ListAPIView):
+    """GET /api/orders  (own orders, newest first, paginated)"""
+
+
+class CustomerOrderDetailView(CustomerOrderMixin, generics.RetrieveAPIView):
+    """GET /api/orders/{id}"""
