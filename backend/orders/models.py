@@ -22,6 +22,14 @@ class Order(models.Model):
         max_length=20, choices=Status.choices, default=Status.PROCESSING
     )
     address = models.TextField()
+    # Card used to pay (KAN-41). Empty only for orders created before checkout existed.
+    payment_token = models.ForeignKey(
+        "payments.PaymentToken",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="orders",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
