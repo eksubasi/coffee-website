@@ -38,3 +38,11 @@ src/
   pages/        Home, Category, Product, Cart, NotFound
   store/        cart store
 ```
+
+## Accounts, checkout and orders (Sprint 2)
+
+- **Auth** (`src/context`, `src/lib/auth.ts`, `src/lib/api.ts`): the access token is kept in memory; the refresh token is the backend's httpOnly cookie, so requests use `credentials: 'include'`. The session is restored on page load via `/api/auth/refresh`. `ProtectedRoute` (logged in) and `RoleRoute` (role check) guard routes.
+- **Cart**: guests use the localStorage cart. After login the guest cart is sent to `POST /api/cart/merge`; while a customer is logged in, cart changes are saved with `PUT /api/cart`.
+- **Checkout** (`/checkout`): card is validated in the browser, paid via `POST /api/payments/mock`, then `POST /api/checkout`. Card number and CVV are never stored.
+- **Invoice**: the backend has no invoice/PDF endpoint yet, so the invoice is rendered from the order and "Download PDF" opens the print dialog ("Save as PDF"). The invoice number (`BN-<year>-<order id>`) is derived from the order.
+- **Orders** (`/orders`, `/orders/:id`): fetched fresh on open, so status changes made by the product manager show up on refresh.
