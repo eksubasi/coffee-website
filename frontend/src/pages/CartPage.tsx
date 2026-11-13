@@ -6,6 +6,7 @@ import { ProductImage } from '@/components/ProductImage'
 import { QuantitySelector } from '@/components/QuantitySelector'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { useAuth } from '@/context/auth-context'
 import { Empty, EmptyContent, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { getProduct } from '@/lib/catalog'
 import { formatPrice } from '@/lib/utils'
@@ -17,6 +18,8 @@ export function CartPage() {
   const subtotal = useCart(selectSubtotal)
   const { setQuantity, remove, clear } = useCart.getState()
   const [notice, setNotice] = useState<string>()
+  const { user } = useAuth()
+  const canCheckout = !user || user.role === 'customer'
 
   // On open, re-check live stock for the items in the cart so quantities can't exceed what is available.
   useEffect(() => {
@@ -140,6 +143,16 @@ export function CartPage() {
             </div>
           </dl>
           <p className="text-xs text-muted-foreground">Shipping and taxes are calculated at checkout.</p>
+          {canCheckout ? (
+            <Button asChild className="w-full" data-testid="checkout-button">
+              {/* Guests are sent to log in first; their cart is merged into their account. */}
+              <Link to={user ? '/checkout' : '/login'} state={user ? undefined : { from: '/checkout' }}>
+                {user ? 'Proceed to checkout' : 'Log in to check out'}
+              </Link>
+            </Button>
+          ) : (
+            <p className="text-xs text-muted-foreground">Only customer accounts can check out.</p>
+          )}
           <Button asChild variant="outline" className="w-full">
             <Link to="/">Continue shopping</Link>
           </Button>

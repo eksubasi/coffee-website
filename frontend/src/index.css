@@ -17,3 +17,20 @@
     min-height: 100vh;
   }
 }
+
+/* Printing / "Save as PDF" of an invoice: show only the invoice. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .invoice,
+  .invoice * {
+    visibility: visible;
+  }
+  .invoice {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    border: 0;
+  }
+}
