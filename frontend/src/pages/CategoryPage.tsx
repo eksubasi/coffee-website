@@ -2,10 +2,10 @@ import { ChevronLeft } from 'lucide-react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 
 import { ErrorState } from '@/components/ErrorState'
-import { ProductGrid } from '@/components/ProductGrid'
+import { ProductGrid } from '@/components/common/ProductGrid'
 import { SortSelect } from '@/components/SortSelect'
-import { EmptyState } from '@/components/temp-kan30/EmptyState'
-import { ProductGridSkeleton } from '@/components/temp-kan30/ProductGridSkeleton'
+import { EmptyState } from '@/components/common/EmptyState'
+import { ProductGridSkeleton } from '@/components/common/Skeletons'
 import { getCategories, getProducts, parseSort } from '@/lib/catalog'
 import { useAsync } from '@/lib/use-async'
 

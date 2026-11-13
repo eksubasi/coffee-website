@@ -1,4 +1,4 @@
-import { ProductCard } from '@/components/temp-kan30/ProductCard'
+import { ProductCard } from '@/components/common/ProductCard'
 import type { Product } from '@/types'
 
 export function ProductGrid({ products }: { products: Product[] }) {

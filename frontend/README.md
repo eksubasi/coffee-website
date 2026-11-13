@@ -18,9 +18,11 @@ The frontend talks to the team's Django API (`/api/health`, `/api/categories/`, 
 In dev, Vite proxies `/api/*` to `VITE_DEV_PROXY_TARGET` (default `http://localhost:8000`).
 Run the backend locally: `DATABASE_URL=sqlite:///db.sqlite3`, `python manage.py migrate`, `python manage.py seed_catalog`, `python manage.py runserver`.
 
-## Temporary files (KAN-30 / Yesim's scope)
+## Design system (KAN-30)
 
-`src/components/temp-kan30/` and `src/styles/theme-temp-kan30.css` are placeholders so the pages build until KAN-30 lands; replace them then.
+Theme tokens are in `src/styles/theme.css`; shared components (ProductCard, ProductGrid, PriceTag, StockBadge,
+EmptyState, skeletons, toasts) are in `src/components/common/`. See [STYLE_GUIDE.md](STYLE_GUIDE.md), or open
+`/styleguide` while running `npm run dev`.
 
 ## What is implemented (Sprint 1, M3)
 

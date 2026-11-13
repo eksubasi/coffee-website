@@ -2,7 +2,7 @@ import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { ErrorState } from '@/components/ErrorState'
-import { EmptyState } from '@/components/temp-kan30/EmptyState'
+import { EmptyState } from '@/components/common/EmptyState'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getCategories } from '@/lib/catalog'
 import { useAsync } from '@/lib/use-async'
