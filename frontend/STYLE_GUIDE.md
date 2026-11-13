@@ -60,6 +60,16 @@ Import from `@/components/common/...`.
 | `ProductGridSkeleton`, `ProductCardSkeleton` | Loading placeholders with the same layout as the real content | `{loading && <ProductGridSkeleton />}` |
 | `toast` + `Toaster` | Short confirmations and errors after an action | `toast.success('Added to cart')` |
 
+### Manager area (`/manage`)
+
+| Component | Use |
+| --- | --- |
+| `DataTable` (`@/components/manage/DataTable`) | Every list in the manager area. Give columns a `sortValue` to make them sortable; rows are paged (`pageSize`, default 10). Pass `loading` and `empty`. |
+| `ConfirmDialog` (`@/components/common/ConfirmDialog`) | Before deleting or any action that can't be undone. If `onConfirm` returns a promise, the button shows "Working…" and the dialog closes only when it succeeds. |
+
+New manager sections are added in one place, `src/lib/manage-nav.ts` (path, label, icon, which roles see it), and get
+their page in `MANAGE_PAGES` in `App.tsx`. The sidebar, overview cards and role checks follow automatically.
+
 Base building blocks (buttons, badges, cards, alerts, tooltips) are shadcn/ui components in `src/components/ui/`.
 Use `Button` variants rather than styling buttons by hand: `default` for the main action, `outline`/`secondary`
 for secondary actions, `destructive` for delete, `ghost` for icon-only buttons.
