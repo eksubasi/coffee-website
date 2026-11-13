@@ -1,10 +1,11 @@
-import { Coffee, ShoppingCart } from 'lucide-react'
+import { Coffee, LayoutDashboard, ShoppingCart } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
 
 import { Container } from '@/components/layout/Container'
 import { SearchBar } from '@/components/SearchBar'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/auth-context'
+import { isStaff } from '@/lib/manage-nav'
 import { selectItemCount, useCart } from '@/store/cart'
 
 export function Navbar() {
@@ -59,6 +60,16 @@ export function Navbar() {
               }
             >
               Orders
+            </NavLink>
+          )}
+          {isStaff(user?.role) && (
+            <NavLink
+              to="/manage"
+              className="flex items-center gap-1.5 rounded-md px-2 py-2 text-muted-foreground hover:bg-muted sm:px-3"
+            >
+              <LayoutDashboard className="size-4" aria-hidden="true" />
+              <span className="hidden sm:inline">Manage</span>
+              <span className="sr-only sm:hidden">Manage</span>
             </NavLink>
           )}
           {status === 'authenticated' && user ? (

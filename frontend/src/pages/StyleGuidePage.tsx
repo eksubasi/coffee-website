@@ -1,11 +1,13 @@
 import { Coffee, Heart } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
 import { PriceTag } from '@/components/common/PriceTag'
 import { ProductCard } from '@/components/common/ProductCard'
 import { ProductCardSkeleton } from '@/components/common/Skeletons'
 import { StockBadge } from '@/components/common/StockBadge'
+import { DataTable, type Column } from '@/components/manage/DataTable'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/lib/toast'
 import type { Product } from '@/types'
@@ -40,6 +42,19 @@ const sample: Product = {
   distributor: 'Demo Roasters',
 }
 
+const tableRows = Array.from({ length: 13 }, (_, i) => ({
+  id: i + 1,
+  name: ['Kenya AA', 'Moka Pot', 'Tamper 58 mm', 'Cold Brew Bottle', 'Hand Grinder'][i % 5] + ` #${i + 1}`,
+  price: 300 + ((i * 937) % 4000),
+  stock: (i * 7) % 20,
+}))
+type TableRow = (typeof tableRows)[number]
+const tableColumns: Column<TableRow>[] = [
+  { id: 'name', header: 'Name', sortValue: (r) => r.name },
+  { id: 'price', header: 'Price', align: 'right', sortValue: (r) => r.price, cell: (r) => <PriceTag price={r.price} size="sm" className="justify-end" /> },
+  { id: 'stock', header: 'Stock', sortValue: (r) => r.stock, cell: (r) => <StockBadge stock={r.stock} /> },
+]
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="space-y-4">
@@ -50,6 +65,8 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 }
 
 export function StyleGuidePage() {
+  const [confirmOpen, setConfirmOpen] = useState(false)
+
   return (
     <div className="space-y-12">
       <div>
@@ -124,6 +141,25 @@ export function StyleGuidePage() {
             action={<Button size="sm">Browse coffee</Button>}
           />
         </div>
+      </Section>
+
+      <Section title="DataTable (manager area)">
+        <DataTable caption="Demo table" columns={tableColumns} rows={tableRows} rowKey={(r) => r.id} pageSize={5} />
+      </Section>
+
+      <Section title="ConfirmDialog">
+        <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
+          Delete product…
+        </Button>
+        <ConfirmDialog
+          open={confirmOpen}
+          onOpenChange={setConfirmOpen}
+          title="Delete Kenya AA?"
+          description="The product disappears from the store. This cannot be undone."
+          confirmLabel="Delete"
+          destructive
+          onConfirm={() => new Promise((resolve) => setTimeout(resolve, 800)).then(() => toast.success('Deleted (demo)'))}
+        />
       </Section>
 
       <Section title="Toast">

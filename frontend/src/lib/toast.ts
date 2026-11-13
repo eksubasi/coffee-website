@@ -35,6 +35,10 @@ export const useToasts = create<ToastStore>((set) => ({
 }))
 
 function show(message: string, variant: ToastVariant): number {
+  // The same message already on screen (double click, StrictMode double effect): don't stack a copy.
+  const existing = useToasts.getState().toasts.find((t) => t.message === message && t.variant === variant)
+  if (existing) return existing.id
+
   const id = nextId++
   useToasts.setState((state) => ({ toasts: [...state.toasts, { id, message, variant }].slice(-MAX_TOASTS) }))
   setTimeout(() => useToasts.getState().dismiss(id), DURATION_MS[variant])
