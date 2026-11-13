@@ -5,14 +5,14 @@ import { Link, useParams } from 'react-router-dom'
 import { ErrorState } from '@/components/ErrorState'
 import { ProductImage } from '@/components/ProductImage'
 import { QuantitySelector } from '@/components/QuantitySelector'
-import { StockBadge } from '@/components/temp-kan30/StockBadge'
+import { PriceTag } from '@/components/common/PriceTag'
+import { StockBadge } from '@/components/common/StockBadge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { ApiError } from '@/lib/api'
 import { getProduct } from '@/lib/catalog'
 import { useAsync } from '@/lib/use-async'
-import { formatPrice } from '@/lib/utils'
 import { useCart } from '@/store/cart'
 import type { Product } from '@/types'
 
@@ -113,7 +113,7 @@ function ProductDetail({ product }: { product: Product }) {
         <div className="space-y-5">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold leading-tight">{product.name}</h1>
-            <p className="text-2xl font-semibold text-primary">{formatPrice(product.price)}</p>
+            <PriceTag price={product.price} size="lg" />
             <StockBadge stock={product.stock} />
           </div>
 

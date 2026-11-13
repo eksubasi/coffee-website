@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 
 import { ErrorState } from '@/components/ErrorState'
 import { OrderStatusChip } from '@/components/OrderStatusChip'
-import { EmptyState } from '@/components/temp-kan30/EmptyState'
+import { EmptyState } from '@/components/common/EmptyState'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getOrders, type Order } from '@/lib/orders'

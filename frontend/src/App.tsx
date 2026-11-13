@@ -16,6 +16,7 @@ import { OrdersPage } from '@/pages/OrdersPage'
 import { ProductPage } from '@/pages/ProductPage'
 import { RegisterPage } from '@/pages/RegisterPage'
 import { SearchPage } from '@/pages/SearchPage'
+import { StyleGuidePage } from '@/pages/StyleGuidePage'
 
 const router = createBrowserRouter([
   {
@@ -43,6 +44,8 @@ const router = createBrowserRouter([
           },
         ],
       },
+      // Dev-only design system reference (KAN-30); not part of the production build's routes.
+      ...(import.meta.env.DEV ? [{ path: 'styleguide', element: <StyleGuidePage /> }] : []),
       { path: '*', element: <NotFoundPage /> },
     ],
   },
