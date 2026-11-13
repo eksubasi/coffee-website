@@ -5,6 +5,7 @@
  *   GET /api/health                                -> { status: "ok", db: true }
  *   GET /api/categories/                           -> Category[]  (not paginated)
  *   GET /api/products/?category=<id>&page_size=100 -> { count, next, previous, results: Product[] }
+ *       optional: &search=<text> (name OR description), &ordering=price|-price|popularity|-popularity
  *   GET /api/products/<id>/                        -> Product     (404 if unknown)
  *
  * API product fields: id, name, model, serial_number, description, quantity_in_stock, in_stock,
@@ -72,9 +73,38 @@ export async function getCategories(): Promise<Category[]> {
   return data.map(normaliseCategory)
 }
 
-export async function getProducts(categoryId: string): Promise<Product[]> {
-  const query = `category=${encodeURIComponent(categoryId)}&page_size=${PAGE_SIZE}`
-  const data = await api<Paginated<Raw>>(`/api/products/?${query}`)
+/**
+ * Sort choices as they appear in the URL (`?sort=`). '' means the API default (name A–Z).
+ * The backend only accepts price | -price | popularity | -popularity in `?ordering=` (KAN-25).
+ */
+export const SORT_OPTIONS = [
+  { value: '', label: 'Name (A–Z)', ordering: undefined },
+  { value: 'price-asc', label: 'Price: low to high', ordering: 'price' },
+  { value: 'price-desc', label: 'Price: high to low', ordering: '-price' },
+  { value: 'popularity', label: 'Most popular', ordering: '-popularity' },
+] as const
+
+export type SortKey = (typeof SORT_OPTIONS)[number]['value']
+
+/** Turns any `?sort=` value (missing, unknown, hand-typed) into a valid SortKey. */
+export function parseSort(value: string | null): SortKey {
+  return SORT_OPTIONS.find((option) => option.value === value)?.value ?? ''
+}
+
+export interface ProductQuery {
+  categoryId?: string
+  search?: string
+  sort?: SortKey
+}
+
+export async function getProducts({ categoryId, search, sort = '' }: ProductQuery = {}): Promise<Product[]> {
+  const params = new URLSearchParams({ page_size: String(PAGE_SIZE) })
+  if (categoryId) params.set('category', categoryId)
+  if (search?.trim()) params.set('search', search.trim())
+  const ordering = SORT_OPTIONS.find((option) => option.value === sort)?.ordering
+  if (ordering) params.set('ordering', ordering)
+
+  const data = await api<Paginated<Raw>>(`/api/products/?${params}`)
   return data.results.map(normaliseProduct)
 }
 

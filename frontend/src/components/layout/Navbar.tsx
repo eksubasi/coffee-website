@@ -2,6 +2,7 @@ import { Coffee, ShoppingCart } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
 
 import { Container } from '@/components/layout/Container'
+import { SearchBar } from '@/components/SearchBar'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/auth-context'
 import { selectItemCount, useCart } from '@/store/cart'
@@ -13,12 +14,14 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
       <Container className="flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 text-lg font-semibold text-primary">
+        <Link to="/" className="flex shrink-0 items-center gap-2 text-lg font-semibold text-primary">
           <Coffee className="size-6 text-accent" aria-hidden="true" />
-          Brewnook
+          <span className="hidden min-[420px]:inline">Brewnook</span>
         </Link>
 
-        <nav aria-label="Main" className="flex items-center gap-0.5 text-sm font-medium sm:gap-1">
+        <SearchBar className="mx-2 min-w-0 max-w-md flex-1 sm:mx-3" />
+
+        <nav aria-label="Main" className="flex shrink-0 items-center gap-0.5 text-sm font-medium sm:gap-1">
           <NavLink
             to="/"
             end
