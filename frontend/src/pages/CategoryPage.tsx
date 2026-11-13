@@ -1,28 +1,35 @@
 import { ChevronLeft } from 'lucide-react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 
 import { ErrorState } from '@/components/ErrorState'
+import { ProductGrid } from '@/components/ProductGrid'
+import { SortSelect } from '@/components/SortSelect'
 import { EmptyState } from '@/components/temp-kan30/EmptyState'
-import { ProductCard } from '@/components/temp-kan30/ProductCard'
 import { ProductGridSkeleton } from '@/components/temp-kan30/ProductGridSkeleton'
-import { getCategories, getProducts } from '@/lib/catalog'
+import { getCategories, getProducts, parseSort } from '@/lib/catalog'
 import { useAsync } from '@/lib/use-async'
 
 export function CategoryPage() {
   const { id = '' } = useParams()
+  const [params] = useSearchParams()
+  const sort = parseSort(params.get('sort'))
+
   const categories = useAsync(getCategories, [])
-  const products = useAsync(() => getProducts(id), [id])
+  const products = useAsync(() => getProducts({ categoryId: id, sort }), [id, sort])
 
   const category = categories.data?.find((c) => c.id === id)
 
   return (
     <div className="space-y-6">
-      <div>
-        <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary">
-          <ChevronLeft className="size-4" aria-hidden="true" /> All categories
-        </Link>
-        <h1 className="mt-2 text-2xl font-bold">{category?.name ?? 'Products'}</h1>
-        {category?.description && <p className="text-muted-foreground">{category.description}</p>}
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary">
+            <ChevronLeft className="size-4" aria-hidden="true" /> All categories
+          </Link>
+          <h1 className="mt-2 text-2xl font-bold">{category?.name ?? 'Products'}</h1>
+          {category?.description && <p className="text-muted-foreground">{category.description}</p>}
+        </div>
+        <SortSelect />
       </div>
 
       {products.loading && <ProductGridSkeleton />}
@@ -35,15 +42,7 @@ export function CategoryPage() {
         <EmptyState title="No products in this category yet" hint="Try another category." />
       )}
 
-      {products.data && products.data.length > 0 && (
-        <ul className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {products.data.map((product) => (
-            <li key={product.id}>
-              <ProductCard product={product} />
-            </li>
-          ))}
-        </ul>
-      )}
+      {products.data && products.data.length > 0 && <ProductGrid products={products.data} />}
     </div>
   )
 }

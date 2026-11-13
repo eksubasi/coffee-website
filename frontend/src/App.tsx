@@ -15,6 +15,7 @@ import { OrderDetailPage } from '@/pages/OrderDetailPage'
 import { OrdersPage } from '@/pages/OrdersPage'
 import { ProductPage } from '@/pages/ProductPage'
 import { RegisterPage } from '@/pages/RegisterPage'
+import { SearchPage } from '@/pages/SearchPage'
 
 const router = createBrowserRouter([
   {
@@ -23,6 +24,7 @@ const router = createBrowserRouter([
       { index: true, element: <HomePage /> },
       { path: 'category/:id', element: <CategoryPage /> },
       { path: 'product/:id', element: <ProductPage /> },
+      { path: 'search', element: <SearchPage /> },
       { path: 'cart', element: <CartPage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'register', element: <RegisterPage /> },
