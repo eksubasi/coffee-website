@@ -20,7 +20,16 @@ urlpatterns = [
         views.MyProductCommentsView.as_view(),
         name="product-my-comments",
     ),
-    path("comments/", views.ModerationQueueView.as_view(), name="comment-moderation"),
-    path("comments/<int:pk>/approve/", views.ApproveCommentView.as_view(), name="comment-approve"),
-    path("comments/<int:pk>/reject/", views.RejectCommentView.as_view(), name="comment-reject"),
+    # Product-manager moderation (KAN-57, used by KAN-61)
+    path("manage/comments/", views.ModerationQueueView.as_view(), name="comment-moderation"),
+    path(
+        "manage/comments/<int:pk>/approve/",
+        views.ApproveCommentView.as_view(),
+        name="comment-approve",
+    ),
+    path(
+        "manage/comments/<int:pk>/reject/",
+        views.RejectCommentView.as_view(),
+        name="comment-reject",
+    ),
 ]

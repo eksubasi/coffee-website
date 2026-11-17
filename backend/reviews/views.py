@@ -13,9 +13,9 @@ Comments
   POST /api/products/{id}/comments/        customer, body {"text": "..."}
        201 with status "pending", 403 if the product was not delivered to them
   GET  /api/products/{id}/comments/mine/   customer's own comments with status
-  GET  /api/comments/?status=pending       product manager: moderation queue
-  PATCH /api/comments/{id}/approve/        product manager
-  PATCH /api/comments/{id}/reject/         product manager
+  GET  /api/manage/comments/?status=pending   product manager: moderation queue
+  PATCH /api/manage/comments/{id}/approve/    product manager
+  PATCH /api/manage/comments/{id}/reject/     product manager
 """
 
 from django.db import IntegrityError, transaction
@@ -136,7 +136,7 @@ class MyProductCommentsView(generics.ListAPIView):
 
 
 class ModerationQueueView(generics.ListAPIView):
-    """GET /api/comments/[?status=pending|approved|rejected]  (oldest first)"""
+    """GET /api/manage/comments/[?status=pending|approved|rejected]  (oldest first)"""
 
     permission_classes = [IsProductManager]
     serializer_class = ModerationCommentSerializer

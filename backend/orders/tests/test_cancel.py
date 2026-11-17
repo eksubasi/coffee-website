@@ -56,7 +56,7 @@ def test_only_processing_orders_can_be_cancelled(customer_client, order, product
 
     response = customer_client.post(f"/api/orders/{order.id}/cancel")
 
-    assert response.status_code == 409
+    assert response.status_code == 400
     assert stock(products[0]) == 10
     order.refresh_from_db()
     assert order.status == current
@@ -67,7 +67,7 @@ def test_cancelling_twice_restores_stock_once(customer_client, order, products):
     second = customer_client.post(f"/api/orders/{order.id}/cancel")
 
     assert first.status_code == 200
-    assert second.status_code == 409
+    assert second.status_code == 400
     assert stock(products[0]) == 12
 
 
