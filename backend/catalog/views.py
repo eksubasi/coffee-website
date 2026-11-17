@@ -7,6 +7,7 @@ GET /api/products/?ordering=    price | -price | popularity | -popularity (KAN-2
 GET /api/products/<id>/         one product
 GET /api/categories/            all categories
 """
+from django.db.models import Avg, Count
 from rest_framework import filters, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
@@ -52,7 +53,12 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         # select_related loads each product's category in the same SQL query
         # (avoids one extra query per product, the "N+1" problem)
-        queryset = Product.objects.select_related("category")
+        queryset = Product.objects.select_related("category").annotate(
+            # KAN-56 (Req 5): average stars and number of ratings, computed in
+            # the same query instead of one extra query per product.
+            average_rating=Avg("ratings__score"),
+            rating_count=Count("ratings"),
+        )
 
         category_id = self.request.query_params.get("category")
         if category_id is not None:
