@@ -16,3 +16,9 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Local development runs over plain HTTP.
 AUTH_REFRESH_COOKIE = {**AUTH_REFRESH_COOKIE, "secure": False}  # noqa: F405
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    }
+}

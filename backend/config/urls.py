@@ -2,6 +2,8 @@
 
 from django.contrib import admin
 from django.urls import include, path
+from django.conf import settings
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -13,3 +15,13 @@ urlpatterns = [
     path("api/", include("reviews.urls")),
     path("api/", include("catalog.urls")),
 ]
+if settings.DEBUG:
+    urlpatterns += [
+        path(
+            "chat-test/",
+            TemplateView.as_view(
+                template_name="chat/echo.html"
+            ),
+            name="chat-echo-test",
+        ),
+    ]
