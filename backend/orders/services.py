@@ -1,12 +1,16 @@
-"""Delivery and order status rules (KAN-45)."""
+"""Delivery and order status rules (KAN-45) and customer order cancellation (KAN-65)."""
 
 from django.db import transaction
+from django.db.models import F
+from django.db.models.functions import Greatest
 from django.utils import timezone
+
+from catalog.models import Product
 
 from .models import Delivery, Order
 
 # Status changes a product manager may make through the API.
-# Cancelling (and restoring stock) is a customer flow owned by KAN-40.
+# Cancelling (and restoring stock) is a customer flow: see cancel_order (KAN-65).
 ALLOWED_TRANSITIONS = {
     Order.Status.PROCESSING: {Order.Status.IN_TRANSIT, Order.Status.DELIVERED},
     Order.Status.IN_TRANSIT: {Order.Status.DELIVERED},
@@ -66,4 +70,43 @@ def change_order_status(order_id, new_status):
         Delivery.objects.filter(order_item__order=order, is_completed=False).update(
             is_completed=True, completed_at=timezone.now()
         )
+    return order
+
+
+@transaction.atomic
+def cancel_order(order_id, user):
+    """Customer cancels their own order while it is still processing (KAN-65).
+
+    Every item's quantity goes back into stock and the popularity added at
+    checkout is taken back, since the sale did not happen. The order row is
+    locked first, so a double click or a product manager shipping the order
+    at the same moment cannot restore the stock twice or cancel a shipped order.
+
+    Raises Order.DoesNotExist if the order is not this user's (the view turns
+    that into 404), and StatusChangeError if it is no longer processing.
+    """
+    order = Order.objects.select_for_update().get(pk=order_id, user=user)
+    if order.status != Order.Status.PROCESSING:
+        raise StatusChangeError(
+            f"Only orders that are still processing can be cancelled "
+            f"(this order is '{order.status}')."
+        )
+
+    items = list(order.items.all())
+    # Lock the products in id order, the same order checkout uses, so a
+    # cancel and a checkout running together cannot deadlock.
+    list(
+        Product.objects.select_for_update()
+        .filter(id__in=[item.product_id for item in items])
+        .order_by("id")
+    )
+    for item in items:
+        Product.objects.filter(pk=item.product_id).update(
+            quantity_in_stock=F("quantity_in_stock") + item.quantity,
+            # Never below 0 (orders made before popularity existed).
+            popularity=Greatest(F("popularity") - item.quantity, 0),
+        )
+
+    order.status = Order.Status.CANCELLED
+    order.save(update_fields=["status", "updated_at"])
     return order

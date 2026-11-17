@@ -75,6 +75,11 @@ export async function getOrder(id: string): Promise<Order> {
   return toOrder(await api<ApiOrder>(`/api/orders/${encodeURIComponent(id)}`))
 }
 
+/** Cancels one of the customer's own orders. Only works while it is still processing (KAN-65). */
+export async function cancelOrder(id: number): Promise<Order> {
+  return toOrder(await api<ApiOrder>(`/api/orders/${id}/cancel`, { method: 'POST' }))
+}
+
 export interface StockProblem {
   productName: string
   requested: number
