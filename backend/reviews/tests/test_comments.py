@@ -166,7 +166,7 @@ def test_manager_sees_pending_queue(buyer, manager, product):
     post_comment(buyer, product, text="first")
     Comment.objects.create(user=buyer, product=product, text="done", status=Comment.Status.APPROVED)
 
-    data = client_for(manager).get("/api/comments/?status=pending").data["results"]
+    data = client_for(manager).get("/api/manage/comments/?status=pending").data["results"]
 
     assert [c["text"] for c in data] == ["first"]
     assert data[0]["product_name"] == "Kenya AA"
@@ -174,13 +174,13 @@ def test_manager_sees_pending_queue(buyer, manager, product):
 
 
 def test_bad_status_filter_is_400(manager):
-    assert client_for(manager).get("/api/comments/?status=maybe").status_code == 400
+    assert client_for(manager).get("/api/manage/comments/?status=maybe").status_code == 400
 
 
 def test_approve_makes_comment_public(buyer, manager, product):
     comment_id = post_comment(buyer, product).data["id"]
 
-    response = client_for(manager).patch(f"/api/comments/{comment_id}/approve/")
+    response = client_for(manager).patch(f"/api/manage/comments/{comment_id}/approve/")
 
     assert response.status_code == 200
     assert response.data["status"] == "approved"
@@ -192,7 +192,7 @@ def test_approve_makes_comment_public(buyer, manager, product):
 def test_reject_keeps_comment_hidden(buyer, manager, product):
     comment_id = post_comment(buyer, product).data["id"]
 
-    response = client_for(manager).patch(f"/api/comments/{comment_id}/reject/")
+    response = client_for(manager).patch(f"/api/manage/comments/{comment_id}/reject/")
 
     assert response.data["status"] == "rejected"
     assert APIClient().get(comments_url(product)).data["results"] == []
@@ -203,9 +203,9 @@ def test_reject_keeps_comment_hidden(buyer, manager, product):
 def test_manager_can_change_their_mind(buyer, manager, product):
     comment_id = post_comment(buyer, product).data["id"]
     pm = client_for(manager)
-    pm.patch(f"/api/comments/{comment_id}/reject/")
+    pm.patch(f"/api/manage/comments/{comment_id}/reject/")
 
-    response = pm.patch(f"/api/comments/{comment_id}/approve/")
+    response = pm.patch(f"/api/manage/comments/{comment_id}/approve/")
 
     assert response.data["status"] == "approved"
 
@@ -214,15 +214,15 @@ def test_manager_can_change_their_mind(buyer, manager, product):
 def test_customer_cannot_moderate(buyer, product, action):
     comment_id = post_comment(buyer, product).data["id"]
 
-    response = client_for(buyer).patch(f"/api/comments/{comment_id}/{action}/")
+    response = client_for(buyer).patch(f"/api/manage/comments/{comment_id}/{action}/")
 
     assert response.status_code == 403
     assert Comment.objects.get(pk=comment_id).status == Comment.Status.PENDING
 
 
 def test_customer_cannot_see_moderation_queue(buyer):
-    assert client_for(buyer).get("/api/comments/").status_code == 403
+    assert client_for(buyer).get("/api/manage/comments/").status_code == 403
 
 
 def test_approving_unknown_comment_is_404(manager):
-    assert client_for(manager).patch("/api/comments/999999/approve/").status_code == 404
+    assert client_for(manager).patch("/api/manage/comments/999999/approve/").status_code == 404

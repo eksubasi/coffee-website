@@ -118,7 +118,7 @@ class CheckoutView(APIView):
 
 class CustomerOrderCancelView(APIView):
     """POST /api/orders/{id}/cancel  -> 200 with the cancelled order,
-    409 if the order is no longer processing, 404 if it is not the user's own."""
+    400 if the order is no longer processing, 404 if it is not the user's own."""
 
     permission_classes = [IsCustomer]
 
@@ -128,6 +128,6 @@ class CustomerOrderCancelView(APIView):
         except Order.DoesNotExist:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         except StatusChangeError as exc:
-            return Response({"detail": str(exc)}, status=status.HTTP_409_CONFLICT)
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         order = Order.objects.prefetch_related("items__product").get(pk=pk)
         return Response(CustomerOrderSerializer(order).data)

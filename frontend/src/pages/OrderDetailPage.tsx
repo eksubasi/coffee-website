@@ -29,8 +29,8 @@ export function OrderDetailPage() {
     } catch (e) {
       const message = e instanceof ApiError ? describeError(e.data, "We couldn't cancel this order.") : "We couldn't cancel this order."
       toast.error(message)
-      // 409: the order was shipped in the meantime; show its real status.
-      if (e instanceof ApiError && e.status === 409) {
+      // 400: the order was shipped in the meantime; show its real status.
+      if (e instanceof ApiError && e.status === 400) {
         setConfirmOpen(false)
         retry()
       }
