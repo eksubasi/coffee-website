@@ -15,7 +15,12 @@ from .serializers import (
     CheckoutSerializer,
 )
 from .checkout import CheckoutError, checkout
-from .services import StatusChangeError, change_order_status, complete_delivery
+from .services import (
+    StatusChangeError,
+    cancel_order,
+    change_order_status,
+    complete_delivery,
+)
 
 
 class DeliveryListView(generics.ListAPIView):
@@ -25,7 +30,10 @@ class DeliveryListView(generics.ListAPIView):
     serializer_class = DeliverySerializer
 
     def get_queryset(self):
-        queryset = Delivery.objects.select_related("customer", "product", "order_item")
+        # Cancelled orders are never delivered, so their items are not listed (KAN-65).
+        queryset = Delivery.objects.select_related(
+            "customer", "product", "order_item"
+        ).exclude(order_item__order__status=Order.Status.CANCELLED)
         flag = self.request.query_params.get("is_completed")
         if flag is not None:
             if flag not in ("true", "false"):
@@ -106,3 +114,20 @@ class CheckoutView(APIView):
             return Response({"detail": exc.message, "problems": exc.problems}, status=code)
         order = Order.objects.prefetch_related("items__product").get(pk=order.pk)
         return Response(CustomerOrderSerializer(order).data, status=status.HTTP_201_CREATED)
+
+
+class CustomerOrderCancelView(APIView):
+    """POST /api/orders/{id}/cancel  -> 200 with the cancelled order,
+    409 if the order is no longer processing, 404 if it is not the user's own."""
+
+    permission_classes = [IsCustomer]
+
+    def post(self, request, pk):
+        try:
+            cancel_order(pk, request.user)
+        except Order.DoesNotExist:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        except StatusChangeError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_409_CONFLICT)
+        order = Order.objects.prefetch_related("items__product").get(pk=pk)
+        return Response(CustomerOrderSerializer(order).data)
