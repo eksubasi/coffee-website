@@ -83,7 +83,7 @@ class CustomerOrderMixin:
     def get_queryset(self):
         return (
             Order.objects.filter(user=self.request.user)
-            .prefetch_related("items__product")
+            .select_related("invoice").prefetch_related("items__product")
         )
 
 
@@ -112,7 +112,7 @@ class CheckoutView(APIView):
         except CheckoutError as exc:
             code = status.HTTP_409_CONFLICT if exc.problems else status.HTTP_400_BAD_REQUEST
             return Response({"detail": exc.message, "problems": exc.problems}, status=code)
-        order = Order.objects.prefetch_related("items__product").get(pk=order.pk)
+        order = Order.objects.select_related("invoice").prefetch_related("items__product").get(pk=order.pk)
         return Response(CustomerOrderSerializer(order).data, status=status.HTTP_201_CREATED)
 
 
@@ -129,5 +129,5 @@ class CustomerOrderCancelView(APIView):
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         except StatusChangeError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
-        order = Order.objects.prefetch_related("items__product").get(pk=pk)
+        order = Order.objects.select_related("invoice").prefetch_related("items__product").get(pk=pk)
         return Response(CustomerOrderSerializer(order).data)

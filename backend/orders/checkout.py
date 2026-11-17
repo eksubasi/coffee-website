@@ -14,6 +14,8 @@ from catalog.models import Product
 
 from .models import Order, OrderItem
 
+from invoices.services import create_invoice
+
 
 class CheckoutError(Exception):
     def __init__(self, message, problems=None):
@@ -65,6 +67,8 @@ def checkout(user, address, payment_token):
             quantity_in_stock=F("quantity_in_stock") - item.quantity,
             popularity=F("popularity") + item.quantity,
         )
+
+    create_invoice(order)
 
     cart.items.all().delete()
     return order
