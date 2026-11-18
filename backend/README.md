@@ -43,6 +43,19 @@ Safe to run repeatedly.
 pytest
 ```
 
+## Invoice email
+
+New invoices schedule PDF email delivery after the checkout transaction
+commits. PDF rendering and delivery run in a background thread.
+
+Development uses the console email backend by default. Production uses
+SMTP configured through environment variables; see `.env.example`.
+
+Delivery failures are logged without failing an already committed order.
+The thread-based implementation does not provide durable retries.
+
+Real inbox delivery must be verified using the deployed application.
+
 ## Health check
 
 `GET /api/health` returns `{"status": "ok", "db": true}` when `SELECT 1`

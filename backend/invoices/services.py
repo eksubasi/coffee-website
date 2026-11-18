@@ -5,6 +5,8 @@ from django.db import transaction
 from orders.models import Order
 
 from .models import Invoice
+from functools import partial
+from .email import queue_invoice_email
 
 
 @transaction.atomic
@@ -47,7 +49,7 @@ def create_invoice(order):
         Decimal("0.00"),
     )
 
-    return Invoice.objects.create(
+    invoice = Invoice.objects.create(
         order=locked_order,
         customer_name=locked_order.user.full_name,
         customer_email=locked_order.user.email,
@@ -56,3 +58,9 @@ def create_invoice(order):
         line_items=lines,
         total=total,
     )
+    transaction.on_commit(
+        partial(queue_invoice_email, invoice),
+        robust=True,
+    )
+
+    return invoice
