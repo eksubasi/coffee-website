@@ -21,8 +21,9 @@ jobs:
 
     env:
       DJANGO_SETTINGS_MODULE: config.settings.dev
-      SECRET_KEY: ci-only-not-for-production
+      SECRET_KEY: ci-only-secret-key-at-least-32-characters-long
       DATABASE_URL: postgresql://brewnook:ci-password@localhost:5432/brewnook
+      REDIS_URL: redis://localhost:6379/0
 
     services:
       postgres:
@@ -38,10 +39,19 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -60,8 +70,17 @@ jobs:
       - name: Check migration consistency
         run: python manage.py makemigrations --check --dry-run
 
-      - name: Run backend tests
-        run: python -m pytest -q
+      - name: Run backend tests with coverage
+        run: python -m pytest -q --cov=. --cov-report=term --cov-report=xml --cov-report=html
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            backend/coverage.xml
+            backend/htmlcov/
 
   frontend:
     name: frontend-checks
@@ -74,7 +93,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brewnook Support Test</title>
+</head>
+<body>
+  <h1>Support Chat Test</h1>
+
+  <p id="status">Misafir</p>
+
+  <fieldset>
+    <legend>İsteğe bağlı giriş</legend>
+    <input id="email" type="email" placeholder="E-posta">
+    <input id="password" type="password" placeholder="Şifre">
+    <button id="login">Giriş yap</button>
+  </fieldset>
+
+  <p>
+    <button id="create">Yeni sohbet oluştur</button>
+  </p>
+
+  <input id="conversation" placeholder="Conversation ID" size="42">
+  <button id="connect">Bağlan</button>
+
+  <pre id="messages"></pre>
+
+  <form id="form">
+    <input id="text" placeholder="Mesaj" maxlength="2000" required>
+    <button>Gönder</button>
+  </form>
+
+  <script>
+    let accessToken = null;
+    let socket = null;
+    let csrfToken = null;
+    const seen = new Set();
+
+    const status = document.querySelector("#status");
+    const conversation = document.querySelector("#conversation");
+    const output = document.querySelector("#messages");
+
+    async function request(path, body) {
+      const headers = { "Content-Type": "application/json" };
+
+      if (accessToken) {
+        headers.Authorization = `Bearer ${accessToken}`;
+      }
+      if (csrfToken) {
+        headers["X-CSRFToken"] = csrfToken;
+      }
+
+      const response = await fetch(path, {
+        method: body === undefined ? "GET" : "POST",
+        credentials: "same-origin",
+        headers,
+        body: body === undefined ? undefined : JSON.stringify(body)
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || JSON.stringify(data));
+      }
+      return data;
+    }
+
+    function show(message) {
+      if (seen.has(message.id)) return;
+      seen.add(message.id);
+      output.textContent += `${message.sender_role}: ${message.text}\n`;
+    }
+
+    function report(error) {
+      status.textContent = error.message;
+    }
+
+    document.querySelector("#login").onclick = async () => {
+      try {
+        const data = await request("/api/auth/login", {
+          email: document.querySelector("#email").value,
+          password: document.querySelector("#password").value
+        });
+        accessToken = data.access;
+        document.querySelector("#password").value = "";
+        status.textContent = "Giriş yapıldı";
+      } catch (error) {
+        report(error);
+      }
+    };
+
+    document.querySelector("#create").onclick = async () => {
+      try {
+        const data = await request("/api/support/conversations", {});
+        conversation.value = data.id;
+        status.textContent = "Sohbet oluşturuldu; Bağlan'a bas";
+      } catch (error) {
+        report(error);
+      }
+    };
+
+    document.querySelector("#connect").onclick = async () => {
+      try {
+        if (socket) socket.close();
+
+        const data = await request(
+          `/api/support/conversations/${conversation.value.trim()}/ticket`,
+          {}
+        );
+
+        seen.clear();
+        output.textContent = "";
+
+        const protocol = location.protocol === "https:" ? "wss" : "ws";
+        socket = new WebSocket(
+          `${protocol}://${location.host}${data.ws_path}?ticket=${encodeURIComponent(data.ticket)}`
+        );
+
+        socket.onopen = () => {
+          status.textContent = "Bağlandı";
+        };
+
+        socket.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+
+          if (data.type === "history") data.messages.forEach(show);
+          if (data.type === "message") show(data.message);
+          if (data.type === "error") status.textContent = data.detail;
+        };
+
+        socket.onclose = (event) => {
+          status.textContent = `Bağlantı kapandı: ${event.code}`;
+        };
+      } catch (error) {
+        report(error);
+      }
+    };
+
+    document.querySelector("#form").onsubmit = (event) => {
+      event.preventDefault();
+
+      if (socket?.readyState === WebSocket.OPEN) {
+        const input = document.querySelector("#text");
+        socket.send(JSON.stringify({ text: input.value }));
+        input.value = "";
+      }
+    };
+
+    request("/api/support/csrf")
+      .then((data) => { csrfToken = data.csrf_token; })
+      .catch(report);
+  </script>
+</body>
+</html>

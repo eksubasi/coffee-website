@@ -1,0 +1,17 @@
+from django.urls import path
+
+from . import views
+
+urlpatterns = [
+    path("checkout", views.CheckoutView.as_view(), name="checkout"),
+    path("orders", views.CustomerOrderListView.as_view(), name="order-list"),
+    path("orders/<int:pk>", views.CustomerOrderDetailView.as_view(), name="order-detail"),
+    path("orders/<int:pk>/cancel", views.CustomerOrderCancelView.as_view(), name="order-cancel"),
+    path("deliveries", views.DeliveryListView.as_view(), name="delivery-list"),
+    path(
+        "deliveries/<int:pk>/complete",
+        views.DeliveryCompleteView.as_view(),
+        name="delivery-complete",
+    ),
+    path("orders/<int:pk>/status", views.OrderStatusView.as_view(), name="order-status"),
+]

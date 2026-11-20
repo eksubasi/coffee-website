@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brewnook WebSocket Echo</title>
+</head>
+<body>
+  <h1>WebSocket Echo Test</h1>
+  <p id="status">Bağlanıyor...</p>
+
+  <form id="form">
+    <input id="message" placeholder="Mesaj yaz" required>
+    <button id="send" disabled>Gönder</button>
+  </form>
+
+  <pre id="output"></pre>
+
+  <script>
+    const status = document.querySelector("#status");
+    const input = document.querySelector("#message");
+    const button = document.querySelector("#send");
+    const output = document.querySelector("#output");
+
+    const protocol = location.protocol === "https:" ? "wss" : "ws";
+    const socket = new WebSocket(
+      `${protocol}://${location.host}/ws/echo/`
+    );
+
+    socket.onopen = () => {
+      status.textContent = "Bağlandı";
+      button.disabled = false;
+    };
+
+    socket.onmessage = (event) => {
+      output.textContent += `Sunucudan: ${event.data}\n`;
+    };
+
+    socket.onclose = () => {
+      status.textContent = "Bağlantı kapandı";
+      button.disabled = true;
+    };
+
+    socket.onerror = () => {
+      status.textContent = "Bağlantı hatası";
+    };
+
+    document.querySelector("#form").onsubmit = (event) => {
+      event.preventDefault();
+
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(input.value);
+        input.value = "";
+      }
+    };
+  </script>
+</body>
+</html>

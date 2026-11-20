@@ -1,75 +1,50 @@
-# React + TypeScript + Vite
+# Brewnook frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19 + TypeScript + Vite + Tailwind CSS v4 + shadcn/ui-style components + react-router + Zustand.
+Tooling versions and the ESLint config match the team repo (`eksubasi/coffee-website`, `frontend/`); `npm run lint` must pass (CI, KAN-21).
 
-Currently, two official plugins are available:
+## Run
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm install
+cp .env.example .env
+npm run dev        # http://localhost:5173
+npm run build      # typecheck + production build
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+## Backend
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+The frontend talks to the team's Django API (`/api/health`, `/api/categories/`, `/api/products/`). There is no mock mode.
+In dev, Vite proxies `/api/*` to `VITE_DEV_PROXY_TARGET` (default `http://localhost:8000`).
+Run the backend locally: `DATABASE_URL=sqlite:///db.sqlite3`, `python manage.py migrate`, `python manage.py seed_catalog`, `python manage.py runserver`.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Design system (KAN-30)
+
+Theme tokens are in `src/styles/theme.css`; shared components (ProductCard, ProductGrid, PriceTag, StockBadge,
+EmptyState, skeletons, toasts) are in `src/components/common/`. See [STYLE_GUIDE.md](STYLE_GUIDE.md), or open
+`/styleguide` while running `npm run dev`.
+
+## What is implemented (Sprint 1, M3)
+
+- **KAN-19** scaffold, router, layout shell (navbar with cart badge, footer with API health indicator), fetch-based API client.
+- **KAN-26** home with category tiles, `/category/:id` product grid with stock badge, loading/empty/error states, responsive grid.
+- **KAN-27** `/product/:id` with model, serial number, warranty, distributor, stock count, quantity selector; Add to cart is disabled (with tooltip) when stock is 0 and quantity is capped at stock.
+- **KAN-29** guest cart in `localStorage` (Zustand `persist`), cart page with quantity +/- (capped at stock), remove, subtotal and navbar badge. Stock is re-checked when the cart page opens.
+
+## Structure
 
 ```
+src/
+  components/   layout/, ui/ (shadcn-style primitives), shared pieces
+  lib/          api client, catalog data access, helpers
+  pages/        Home, Category, Product, Cart, NotFound
+  store/        cart store
+```
+
+## Accounts, checkout and orders (Sprint 2)
+
+- **Auth** (`src/context`, `src/lib/auth.ts`, `src/lib/api.ts`): the access token is kept in memory; the refresh token is the backend's httpOnly cookie, so requests use `credentials: 'include'`. The session is restored on page load via `/api/auth/refresh`. `ProtectedRoute` (logged in) and `RoleRoute` (role check) guard routes.
+- **Cart**: guests use the localStorage cart. After login the guest cart is sent to `POST /api/cart/merge`; while a customer is logged in, cart changes are saved with `PUT /api/cart`.
+- **Checkout** (`/checkout`): card is validated in the browser, paid via `POST /api/payments/mock`, then `POST /api/checkout`. Card number and CVV are never stored.
+- **Invoice**: the backend has no invoice/PDF endpoint yet, so the invoice is rendered from the order and "Download PDF" opens the print dialog ("Save as PDF"). The invoice number (`BN-<year>-<order id>`) is derived from the order.
+- **Orders** (`/orders`, `/orders/:id`): fetched fresh on open, so status changes made by the product manager show up on refresh.

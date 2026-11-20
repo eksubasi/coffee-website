@@ -12,4 +12,17 @@ CORS_ALLOWED_ORIGINS = env.list(
     default=["http://localhost:5173", "http://127.0.0.1:5173"],
 )
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = env(
+    "EMAIL_BACKEND",
+    default="django.core.mail.backends.console.EmailBackend",
+)
+
+# Local development runs over plain HTTP.
+AUTH_REFRESH_COOKIE = {**AUTH_REFRESH_COOKIE, "secure": False}  # noqa: F405
+
+CHAT_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
