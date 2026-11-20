@@ -21,8 +21,6 @@
 
 **Backup plan:** if anything breaks live, show `/api/products/?search=kenya&ordering=-price` in the browser and the test run (`pytest`).
 
-## Retrospective
-
 ## Demo rehearsal results
 
 Date: 20 Nov 2026 · Environment: local (Docker Postgres 16 + Django + Vite) · Tested by: Ahmet Efe
