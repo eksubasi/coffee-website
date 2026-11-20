@@ -23,15 +23,19 @@
 
 ## Retrospective
 
-Date: …  ·  Participants: …
+## Demo rehearsal results
 
-### What went well
-- …
+Date: 20 Nov 2026 · Environment: local (Docker Postgres 16 + Django + Vite) · Tested by: Ahmet Efe
 
-### What to improve
-- …
+| # | Step | Result |
+|---|------|--------|
+| 1 | Home page: categories and navbar | ✅ Pass |
+| 2 | Category page: products filtered, price & stock on cards | ✅ Pass |
+| 3 | Product detail: description, price, stock, warranty, distributor, origin/roast date | ✅ Pass |
+| 4 | Out-of-stock product (Kenya AA, Burrwick E64): visible, "Add to cart" disabled | ✅ Pass |
+| 5 | Search `kenya`: matches name/description, out-of-stock item shown | ✅ Pass |
+| 6 | Sort by price ↑/↓ and popularity | ✅ Pass |
+| 7 | Guest cart: add, change quantity, remove, totals update | ✅ Pass |
+| 8 | Login as customer: guest cart kept after login | ✅ Pass |
 
-### Action items (→ Sprint 2 Jira tickets)
-| Action | Owner | Jira |
-|--------|-------|------|
-| … | … | KAN-… |
+All 8 demo steps passed. No blocking issues found.
