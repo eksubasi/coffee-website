@@ -20,8 +20,9 @@ EMAIL_BACKEND = env(
 # Local development runs over plain HTTP.
 AUTH_REFRESH_COOKIE = {**AUTH_REFRESH_COOKIE, "secure": False}  # noqa: F405
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
-    }
-}
+CHAT_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]

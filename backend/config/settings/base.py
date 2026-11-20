@@ -185,3 +185,18 @@ EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
 EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", default=False)
 EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", default=15)
+
+# Real-time support
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [env("REDIS_URL", default="redis://127.0.0.1:6379/0")],
+        },
+    },
+}
+
+CHAT_ALLOWED_ORIGINS = env.list(
+    "CHAT_ALLOWED_ORIGINS",
+    default=[],
+)

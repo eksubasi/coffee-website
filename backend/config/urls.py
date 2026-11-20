@@ -15,6 +15,7 @@ urlpatterns = [
     path("api/", include("reviews.urls")),
     path("api/", include("catalog.urls")),
     path("api/", include("invoices.urls")),
+    path("api/", include("chat.urls")),
 ]
 if settings.DEBUG:
     urlpatterns += [
@@ -24,5 +25,10 @@ if settings.DEBUG:
                 template_name="chat/echo.html"
             ),
             name="chat-echo-test",
+        ),
+        path(
+            "support-test/",
+            TemplateView.as_view(template_name="chat/support.html"),
+            name="support-test",
         ),
     ]

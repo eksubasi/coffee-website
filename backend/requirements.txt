@@ -16,3 +16,4 @@ typing_extensions==4.16.0
 channels[daphne]>=4.3,<5
 reportlab==5.1.0
 pypdf==7.1.0
+channels-redis>=4.2,<5
