@@ -17,3 +17,5 @@ channels[daphne]>=4.3,<5
 reportlab==5.1.0
 pypdf==7.1.0
 channels-redis>=4.2,<5
+ruff==0.17.4
+pytest-cov==7.1.0
