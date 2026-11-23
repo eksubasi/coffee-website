@@ -9,6 +9,7 @@ Django + Django REST Framework API for Brewnook.
 | `core/` | Cross-cutting endpoints such as the health check |
 | `payments/` | Mock bank endpoint and hashed card tokens |
 | `orders/` | Orders, order items and deliveries (product-manager endpoints) |
+| `wishlist/` | Customer wishlist: saved products API (`/api/wishlist`) |
 | `catalog/` | Products and categories: models, `seed_catalog` command, public catalog API |
 | `requirements.txt` | Pinned Python dependencies |
 | `.env.example` | Template for `backend/.env` (local values only) |
