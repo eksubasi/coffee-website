@@ -24,15 +24,14 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ["email", "password", "full_name", "tax_id", "home_address"]
         extra_kwargs = {
-            # Uniqueness is checked case-insensitively in validate_email.
+            # Uniqueness is checked case-insensitively in RegisterView, after
+            # all field validation, so that the response never reveals
+            # whether an email is already registered.
             "email": {"validators": []},
         }
 
     def validate_email(self, value):
-        email = User.objects.normalize_email(value)
-        if User.objects.filter(email__iexact=email).exists():
-            raise serializers.ValidationError("A user with this email already exists.")
-        return email
+        return User.objects.normalize_email(value)
 
     def validate(self, attrs):
         password = attrs.get("password")
@@ -50,3 +49,15 @@ class RegisterSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(trim_whitespace=False, style={"input_type": "password"})
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField(
+        write_only=True, trim_whitespace=False, style={"input_type": "password"}
+    )

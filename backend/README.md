@@ -13,6 +13,7 @@ Django + Django REST Framework API for Brewnook.
 | `requirements.txt` | Pinned Python dependencies |
 | `.env.example` | Template for `backend/.env` (local values only) |
 | `pytest.ini` | pytest configuration (uses `config.settings.dev`) |
+| `conftest.py` | Shared pytest fixtures (clears the cache, and so throttle counters, around every test) |
 
 ## Settings
 
@@ -27,6 +28,8 @@ Django + Django REST Framework API for Brewnook.
 | `DEMO_PASSWORD` | `seed_users` | Password for demo users (default `brewnook-demo`) |
 | `ALLOWED_HOSTS` | prod | Comma-separated host names (required) |
 | `AUTH_REFRESH_COOKIE_SAMESITE` | all | SameSite for the refresh cookie (default `Lax`) |
+| `FRONTEND_URL` | all | Frontend base URL used in password reset links (default `http://localhost:5173`) |
+| `DRF_NUM_PROXIES` | all | Trusted reverse proxies in front of the API, used to find the client IP for auth throttling (default `0` = `REMOTE_ADDR`) |
 
 ## Demo users
 
