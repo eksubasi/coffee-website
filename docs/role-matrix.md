@@ -25,6 +25,7 @@ Legend: ✅ allowed · ❌ denied (403) · 🌐 public (no login needed)
 | `GET /api/categories/` | 🌐 | 🌐 | 🌐 | 🌐 | 🌐 | `AllowAny` |
 | `POST /api/auth/register`, `login`, `refresh`, `logout` | 🌐 | 🌐 | 🌐 | 🌐 | 🌐 | `AllowAny` |
 | `GET /api/auth/me` | ❌ 401 | ✅ | ✅ | ✅ | ✅ | `IsAuthenticated` |
+| `POST /api/auth/password-reset`, `password-reset/confirm` (KAN-74) | 🌐 | 🌐 | 🌐 | 🌐 | 🌐 | `AllowAny` |
 | `POST /api/payments/mock` (KAN-42) | ❌ 401 | ✅ | ❌ | ❌ | ❌ | `IsCustomer` |
 | `GET /api/deliveries` (KAN-45) | ❌ 401 | ❌ | ❌ | ✅ | ❌ | `IsProductManager` |
 | `PATCH /api/deliveries/{id}/complete` (KAN-45) | ❌ 401 | ❌ | ❌ | ✅ | ❌ | `IsProductManager` |
