@@ -60,7 +60,9 @@ def test_register_rejects_duplicate_email_case_insensitively(api, customer):
     )
 
     assert response.status_code == 400
-    assert "email" in response.json()
+    # Generic message: the response must not reveal that the email is taken.
+    assert "email" not in response.json()
+    assert "exists" not in response.json()["detail"]
     assert User.objects.count() == 1
 
 
