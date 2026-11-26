@@ -1,4 +1,4 @@
-import { api, ApiError } from '@/lib/api'
+import { api, apiBlob, ApiError } from '@/lib/api'
 import { digitsOnly } from '@/lib/card'
 import type { CardInput } from '@/lib/card'
 
@@ -15,6 +15,26 @@ export interface OrderItem {
   total: number
 }
 
+export interface InvoiceSnapshot {
+  number: string
+  issued_at: string
+  customer_name: string
+  customer_email: string
+  tax_id: string
+  billing_address: string
+  line_items: {
+    product_id: number
+    name: string
+    model: string
+    quantity: number
+    unit_price: string
+    discount_rate: string
+    line_total: string
+  }[]
+  total: string
+  currency: string
+}
+
 export interface Order {
   id: number
   status: OrderStatus
@@ -22,6 +42,9 @@ export interface Order {
   total: number
   items: OrderItem[]
   createdAt: string
+  invoiceId: number | null
+  invoicePdfUrl: string | null
+  invoice: InvoiceSnapshot | null
 }
 
 interface ApiOrder {
@@ -30,6 +53,9 @@ interface ApiOrder {
   address: string
   total_price: string
   created_at: string
+  invoice_id?: number | null
+  invoice_pdf_url?: string | null
+  invoice?: InvoiceSnapshot | null
   items: {
     id: number
     product: number
@@ -48,6 +74,9 @@ function toOrder(o: ApiOrder): Order {
     address: o.address,
     total: Number(o.total_price),
     createdAt: o.created_at,
+    invoiceId: o.invoice_id ?? null,
+    invoicePdfUrl: o.invoice_pdf_url ?? null,
+    invoice: o.invoice ?? null,
     items: o.items.map((i) => ({
       id: i.id,
       productId: String(i.product),
@@ -130,7 +159,15 @@ export const STATUS_LABEL: Record<OrderStatus, string> = {
   cancelled: 'Cancelled',
 }
 
-/** Invoice number shown on the invoice. Derived from the order (the backend has no invoice model yet). */
-export function invoiceNumber(order: Pick<Order, 'id' | 'createdAt'>): string {
-  return `BN-${new Date(order.createdAt).getFullYear()}-${String(order.id).padStart(6, '0')}`
+/** Use the stored invoice number instead of generating one from the order. */
+export function invoiceNumber(order: Pick<Order, 'invoice'>): string {
+  return order.invoice?.number ?? 'Not issued'
+}
+
+export async function fetchInvoicePdf(invoiceId: number): Promise<Blob> {
+  if (!Number.isInteger(invoiceId) || invoiceId < 1) {
+    throw new Error('Invalid invoice ID.')
+  }
+
+  return apiBlob(`/api/invoices/${invoiceId}/pdf`)
 }

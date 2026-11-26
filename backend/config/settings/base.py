@@ -204,6 +204,7 @@ EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
 EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", default=False)
 EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", default=15)
+RESEND_API_KEY = env("RESEND_API_KEY", default="")
 
 # Real-time support
 CHANNEL_LAYERS = {

@@ -7,4 +7,12 @@ __pycache__/
 *.py[cod]
 .venv/
 node_modules/
+
+dist/
 backend/staticfiles/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.pytest_cache/
+.ruff_cache/

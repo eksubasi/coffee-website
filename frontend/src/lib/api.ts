@@ -73,19 +73,57 @@ async function send(path: string, init: RequestInit | undefined, json: unknown):
   }
 }
 
-export async function api<T>(path: string, init?: RequestInit & { json?: unknown }): Promise<T> {
+async function request(
+  path: string,
+  init?: RequestInit & { json?: unknown },
+): Promise<Response> {
   const { json, ...rest } = init ?? {}
   let response = await send(path, rest, json)
 
-  // Access token expired: refresh once and retry (not for the auth endpoints themselves).
   if (response.status === 401 && accessToken && !path.startsWith('/api/auth/')) {
-    if (await refreshAccessToken()) response = await send(path, rest, json)
+    if (await refreshAccessToken()) {
+      response = await send(path, rest, json)
+    }
   }
 
   if (!response.ok) {
     const data = await response.json().catch(() => undefined)
-    throw new ApiError(describeError(data, `Request failed (${response.status})`), response.status, data)
+    throw new ApiError(
+      describeError(data, `Request failed (${response.status})`),
+      response.status,
+      data,
+    )
   }
+
+  return response
+}
+
+export async function api<T>(
+  path: string,
+  init?: RequestInit & { json?: unknown },
+): Promise<T> {
+  const response = await request(path, init)
   if (response.status === 204) return undefined as T
   return (await response.json()) as T
+}
+
+export async function apiBlob(path: string): Promise<Blob> {
+  const response = await request(path, {
+    headers: { Accept: 'application/pdf' },
+  })
+
+  const contentType = response.headers
+    .get('Content-Type')
+    ?.split(';')[0]
+    .trim()
+    .toLowerCase()
+
+  if (contentType !== 'application/pdf') {
+    throw new ApiError(
+      'The server did not return an invoice PDF.',
+      response.status,
+    )
+  }
+
+  return response.blob()
 }
