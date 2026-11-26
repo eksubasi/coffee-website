@@ -109,7 +109,7 @@ export async function api<T>(
 
 export async function apiBlob(path: string): Promise<Blob> {
   const response = await request(path, {
-    headers: { Accept: 'application/pdf' },
+    headers: { Accept: '*/*' },
   })
 
   const contentType = response.headers
