@@ -13,6 +13,7 @@ import { CategoryPage } from '@/pages/CategoryPage'
 import { CheckoutPage } from '@/pages/CheckoutPage'
 import { HomePage } from '@/pages/HomePage'
 import { LoginPage } from '@/pages/LoginPage'
+import { CategoriesStockPage } from '@/pages/manage/CategoriesStockPage'
 import { ComingSoonPage } from '@/pages/manage/ComingSoonPage'
 import { ManageHomePage } from '@/pages/manage/ManageHomePage'
 import { ManageProductsPage } from '@/pages/manage/ManageProductsPage'
@@ -29,6 +30,7 @@ import { StyleGuidePage } from '@/pages/StyleGuidePage'
 /** Manager pages that exist so far; every other section in MANAGE_SECTIONS shows a placeholder. */
 const MANAGE_PAGES: Partial<Record<string, ReactElement>> = {
   products: <ManageProductsPage />,
+  categories: <CategoriesStockPage />,
 }
 
 /** Extra pages under a section, with the same role check as the section (e.g. /manage/products/new). */
