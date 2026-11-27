@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 
 import { ErrorState } from '@/components/ErrorState'
 import { ProductImage } from '@/components/ProductImage'
+import { ProductReviews, RatingSummary } from '@/components/ProductReviews'
 import { QuantitySelector } from '@/components/QuantitySelector'
 import { PriceTag } from '@/components/common/PriceTag'
 import { StockBadge } from '@/components/common/StockBadge'
@@ -13,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { ApiError } from '@/lib/api'
 import { getProduct } from '@/lib/catalog'
 import { useAsync } from '@/lib/use-async'
+import { useRatingSummary } from '@/lib/use-rating-summary'
 import { useCart } from '@/store/cart'
 import type { Product } from '@/types'
 
@@ -51,6 +53,7 @@ export function ProductPage() {
 function ProductDetail({ product }: { product: Product }) {
   const inCart = useCart((s) => s.items.find((item) => item.productId === product.id)?.quantity ?? 0)
   const add = useCart((s) => s.add)
+  const [rating, refreshRating] = useRatingSummary(product)
 
   const [requested, setRequested] = useState(1)
   const [justAdded, setJustAdded] = useState(0)
@@ -113,6 +116,7 @@ function ProductDetail({ product }: { product: Product }) {
         <div className="space-y-5">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold leading-tight">{product.name}</h1>
+            <RatingSummary average={rating.average} count={rating.count} />
             <PriceTag price={product.price} size="lg" />
             <StockBadge stock={product.stock} />
           </div>
@@ -169,6 +173,8 @@ function ProductDetail({ product }: { product: Product }) {
           </div>
         </div>
       </div>
+
+      <ProductReviews productId={product.id} summary={rating} onRated={refreshRating} />
     </div>
   )
 }

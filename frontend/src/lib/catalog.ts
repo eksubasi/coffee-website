@@ -58,6 +58,8 @@ export function normaliseProduct(raw: Raw): Product {
     warranty: warrantyMonths > 0 ? `${warrantyStatus} (${warrantyMonths} months)` : warrantyStatus,
     distributor: contact ? `${str(raw.distributor_name)} (${contact})` : str(raw.distributor_name),
     imageUrl: imageUrl(raw.image),
+    averageRating: raw.average_rating === null || raw.average_rating === undefined ? null : Number(raw.average_rating),
+    ratingCount: Number(raw.rating_count ?? 0),
     brand: optional(raw.brand),
     origin: optional(raw.origin),
     roastDate: optional(raw.roast_date),

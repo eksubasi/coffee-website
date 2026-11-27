@@ -22,6 +22,9 @@ export interface Product {
   distributor: string
   /** Path or URL of the product image; may not exist yet, the UI falls back to a placeholder. */
   imageUrl?: string
+  /** Average of all customer ratings (1-5), or null when nobody has rated it yet. */
+  averageRating: number | null
+  ratingCount: number
 
   // Optional, mostly for coffee products (empty for equipment)
   brand?: string

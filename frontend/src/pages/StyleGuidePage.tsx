@@ -40,6 +40,8 @@ const sample: Product = {
   price: 590,
   warranty: 'No warranty',
   distributor: 'Demo Roasters',
+  averageRating: null,
+  ratingCount: 0,
 }
 
 const tableRows = Array.from({ length: 13 }, (_, i) => ({
