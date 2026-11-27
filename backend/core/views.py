@@ -17,4 +17,12 @@ def database_is_reachable() -> bool:
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def health(request):
-    return Response({"status": "ok", "db": database_is_reachable()})
+    reachable = database_is_reachable()
+
+    return Response(
+        {
+            "status": "ok" if reachable else "unavailable",
+            "db": reachable,
+        },
+        status=200 if reachable else 503,
+    )

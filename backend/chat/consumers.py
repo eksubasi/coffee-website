@@ -6,6 +6,7 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 from .models import Conversation, Message
 from .services import can_access, message_data
+from accounts.models import User
 
 
 class EchoConsumer(AsyncWebsocketConsumer):
@@ -91,12 +92,28 @@ class SupportConsumer(AsyncJsonWebsocketConsumer):
         )
 
     async def support_message(self, event):
+        if not await self.allowed():
+            await self.close(code=4403)
+            return
+
         await self.send_json(
             {"type": "message", "message": event["message"]}
         )
 
     @database_sync_to_async
     def allowed(self):
+        user = self.scope["user"]
+
+        if user.is_authenticated:
+            user = User.objects.filter(
+                pk=user.pk,
+                is_active=True,
+            ).first()
+
+            if user is None:
+                return False
+
+            self.scope["user"] = user
         conversation = Conversation.objects.filter(
             pk=self.conversation_id
         ).first()

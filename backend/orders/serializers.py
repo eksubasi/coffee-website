@@ -64,6 +64,24 @@ class CustomerOrderSerializer(serializers.ModelSerializer):
 
     invoice_id = serializers.SerializerMethodField()
     invoice_pdf_url = serializers.SerializerMethodField()
+    invoice = serializers.SerializerMethodField()
+
+    def get_invoice(self, obj):
+        invoice = getattr(obj, "invoice", None)
+        if invoice is None:
+            return None
+
+        return {
+            "number": invoice.number,
+            "issued_at": invoice.issued_at.isoformat(),
+            "customer_name": invoice.customer_name,
+            "customer_email": invoice.customer_email,
+            "tax_id": invoice.tax_id,
+            "billing_address": invoice.billing_address,
+            "line_items": invoice.line_items,
+            "total": str(invoice.total),
+            "currency": invoice.currency,
+        }
 
     def get_invoice_id(self, obj):
         invoice = getattr(obj, "invoice", None)
@@ -78,7 +96,7 @@ class CustomerOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ["id", "status", "address", "total_price", "items", "created_at", "updated_at", "invoice_id", "invoice_pdf_url"]
+        fields = ["id", "status", "address", "total_price", "items", "created_at", "updated_at", "invoice_id", "invoice_pdf_url", "invoice",]
         read_only_fields = fields
     
         

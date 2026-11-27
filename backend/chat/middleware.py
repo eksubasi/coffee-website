@@ -23,15 +23,17 @@ class ChatTicketMiddleware:
 
     async def __call__(self, scope, receive, send):
         scope = dict(scope)
-        query = parse_qs(scope.get("query_string", b"").decode())
 
         try:
+            query = parse_qs(scope.get("query_string", b"").decode())
             ticket = query.get("ticket", [""])[0]
             identity = signing.loads(
                 ticket,
                 salt="chat.websocket",
                 max_age=60,
             )
+            if not isinstance(identity, dict):
+                raise ValueError("Invalid chat ticket payload.")
         except (signing.BadSignature, ValueError, UnicodeDecodeError):
             await send({"type": "websocket.close", "code": 4401})
             return

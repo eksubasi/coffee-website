@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "reviews",
     "chat",
     "invoices",
+    "wishlist",
 ]
 
 MIDDLEWARE = [
@@ -101,6 +102,12 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.ScryptPasswordHasher",
 ]
 
+# Password reset links expire after one hour.
+PASSWORD_RESET_TIMEOUT = 60 * 60
+
+# Base URL of the frontend, used to build links in emails.
+FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:5173")
+
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -132,6 +139,18 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 24,
+    # Throttling is opt-in per view (see accounts/throttling.py); no global
+    # default throttle classes are set.
+    "DEFAULT_THROTTLE_RATES": {
+        "login_ip": "5/min",
+        "login_email": "5/min",
+        "register_ip": "3/min",
+    },
+    # Number of trusted reverse proxies in front of the app. 0 means the
+    # client IP is REMOTE_ADDR and X-Forwarded-For is ignored, so it cannot
+    # be spoofed to bypass IP-based throttles. Set to the real proxy count
+    # in production.
+    "NUM_PROXIES": env.int("DRF_NUM_PROXIES", default=0),
 }
 
 
@@ -185,13 +204,22 @@ EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
 EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", default=False)
 EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", default=15)
+RESEND_API_KEY = env("RESEND_API_KEY", default="")
 
 # Real-time support
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [env("REDIS_URL", default="redis://127.0.0.1:6379/0")],
+            "hosts": [
+                {
+                    "address": env(
+                        "REDIS_URL",
+                        default="redis://127.0.0.1:6379/0",
+                    ),
+                    "socket_timeout": None,
+                },
+            ],
         },
     },
 }

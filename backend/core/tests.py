@@ -21,5 +21,5 @@ def test_health_reports_database_unreachable(client):
     ):
         response = client.get(reverse("health"))
 
-    assert response.status_code == 200
-    assert response.json() == {"status": "ok", "db": False}
+    assert response.status_code == 503
+    assert response.json() == {"status": "unavailable", "db": False}

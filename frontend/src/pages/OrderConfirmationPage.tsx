@@ -21,7 +21,10 @@ export function OrderConfirmationPage() {
       <Alert data-testid="order-success">
         <CircleCheck />
         <AlertTitle>Thank you! Your order #{order.id} is confirmed.</AlertTitle>
-        <AlertDescription>Your invoice number is {invoiceNumber(order)}. You can follow the delivery status in your orders.</AlertDescription>
+        <AlertDescription>
+          {order.invoice && (<>Your invoice number is {invoiceNumber(order)}. </>)}
+          You can follow the delivery status in your orders.
+        </AlertDescription>
       </Alert>
 
       <Invoice order={order} />

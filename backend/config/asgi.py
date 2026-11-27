@@ -12,14 +12,13 @@ os.environ.setdefault(
 
 django_asgi_app = get_asgi_application()
 
-from chat.middleware import ChatTicketMiddleware  # noqa: E402
 from chat.routing import websocket_urlpatterns  # noqa: E402
 
 application = ProtocolTypeRouter(
     {
         "http": django_asgi_app,
         "websocket": OriginValidator(
-            ChatTicketMiddleware(URLRouter(websocket_urlpatterns)),
+            URLRouter(websocket_urlpatterns),
             settings.CHAT_ALLOWED_ORIGINS,
         ),
     }

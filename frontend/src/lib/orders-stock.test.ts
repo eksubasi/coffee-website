@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'vitest'
 
-import { invoiceNumber, STATUS_LABEL } from '@/lib/orders'
+import { invoiceNumber, type InvoiceSnapshot, STATUS_LABEL } from '@/lib/orders'
 import { LOW_STOCK_THRESHOLD, stockState } from '@/lib/stock'
 
 describe('invoiceNumber', () => {
-  it('pads the order id and uses the year of the order', () => {
-    expect(invoiceNumber({ id: 42, createdAt: '2026-11-20T10:00:00Z' })).toBe('BN-2026-000042')
+  it('shows the number stored on the invoice', () => {
+    const invoice = { number: 'BN-544177F133594F6B' } as InvoiceSnapshot
+    expect(invoiceNumber({ invoice })).toBe('BN-544177F133594F6B')
+  })
+
+  it('says "Not issued" when the order has no invoice', () => {
+    expect(invoiceNumber({ invoice: null })).toBe('Not issued')
   })
 })
 

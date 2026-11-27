@@ -13,9 +13,11 @@ import { CategoryPage } from '@/pages/CategoryPage'
 import { CheckoutPage } from '@/pages/CheckoutPage'
 import { HomePage } from '@/pages/HomePage'
 import { LoginPage } from '@/pages/LoginPage'
+import { CategoriesStockPage } from '@/pages/manage/CategoriesStockPage'
 import { ComingSoonPage } from '@/pages/manage/ComingSoonPage'
 import { ManageHomePage } from '@/pages/manage/ManageHomePage'
 import { ManageProductsPage } from '@/pages/manage/ManageProductsPage'
+import { ProductFormPage } from '@/pages/manage/ProductFormPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { OrderConfirmationPage } from '@/pages/OrderConfirmationPage'
 import { OrderDetailPage } from '@/pages/OrderDetailPage'
@@ -28,6 +30,15 @@ import { StyleGuidePage } from '@/pages/StyleGuidePage'
 /** Manager pages that exist so far; every other section in MANAGE_SECTIONS shows a placeholder. */
 const MANAGE_PAGES: Partial<Record<string, ReactElement>> = {
   products: <ManageProductsPage />,
+  categories: <CategoriesStockPage />,
+}
+
+/** Extra pages under a section, with the same role check as the section (e.g. /manage/products/new). */
+const MANAGE_SUBPAGES: Partial<Record<string, { path: string; element: ReactElement }[]>> = {
+  products: [
+    { path: 'new', element: <ProductFormPage /> },
+    { path: ':id/edit', element: <ProductFormPage /> },
+  ],
 }
 
 const router = createBrowserRouter([
@@ -73,7 +84,10 @@ const router = createBrowserRouter([
           ...MANAGE_SECTIONS.map((section) => ({
             path: section.path,
             element: <StaffRoute roles={section.roles} />,
-            children: [{ index: true, element: MANAGE_PAGES[section.path] ?? <ComingSoonPage section={section} /> }],
+            children: [
+              { index: true, element: MANAGE_PAGES[section.path] ?? <ComingSoonPage section={section} /> },
+              ...(MANAGE_SUBPAGES[section.path] ?? []),
+            ],
           })),
           { path: '*', element: <Navigate to="/manage" replace /> },
         ],

@@ -25,10 +25,16 @@ Legend: ✅ allowed · ❌ denied (403) · 🌐 public (no login needed)
 | `GET /api/categories/` | 🌐 | 🌐 | 🌐 | 🌐 | 🌐 | `AllowAny` |
 | `POST /api/auth/register`, `login`, `refresh`, `logout` | 🌐 | 🌐 | 🌐 | 🌐 | 🌐 | `AllowAny` |
 | `GET /api/auth/me` | ❌ 401 | ✅ | ✅ | ✅ | ✅ | `IsAuthenticated` |
+| `POST /api/auth/password-reset`, `password-reset/confirm` (KAN-74) | 🌐 | 🌐 | 🌐 | 🌐 | 🌐 | `AllowAny` |
 | `POST /api/payments/mock` (KAN-42) | ❌ 401 | ✅ | ❌ | ❌ | ❌ | `IsCustomer` |
 | `GET /api/deliveries` (KAN-45) | ❌ 401 | ❌ | ❌ | ✅ | ❌ | `IsProductManager` |
 | `PATCH /api/deliveries/{id}/complete` (KAN-45) | ❌ 401 | ❌ | ❌ | ✅ | ❌ | `IsProductManager` |
 | `PATCH /api/orders/{id}/status` (KAN-45) | ❌ 401 | ❌ | ❌ | ✅ | ❌ | `IsProductManager` |
+| `GET`, `POST /api/wishlist` (KAN-62) | ❌ 401 | ✅ | ❌ | ❌ | ❌ | `IsCustomer` |
+| `DELETE /api/wishlist/{product_id}` (KAN-62) | ❌ 401 | ✅ | ❌ | ❌ | ❌ | `IsCustomer` |
+| `GET`, `POST /api/manage/products`; `GET`, `PUT`, `PATCH`, `DELETE /api/manage/products/{id}` (KAN-50) | ❌ 401 | ❌ | ❌ | ✅ | ❌ | `IsProductManager` |
+| `PATCH /api/manage/products/{id}/stock` (KAN-59) | ❌ 401 | ❌ | ❌ | ✅ | ❌ | `IsProductManager` |
+| `GET`, `POST /api/manage/categories`; `GET`, `PUT`, `PATCH`, `DELETE /api/manage/categories/{id}` (KAN-59) | ❌ 401 | ❌ | ❌ | ✅ | ❌ | `IsProductManager` |
 
 Rows marked with a ticket key are added by that ticket's PR.
 

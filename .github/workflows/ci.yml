@@ -21,7 +21,7 @@ jobs:
 
     env:
       DJANGO_SETTINGS_MODULE: config.settings.dev
-      SECRET_KEY: ci-only-not-for-production
+      SECRET_KEY: ci-only-secret-key-at-least-32-characters-long
       DATABASE_URL: postgresql://brewnook:ci-password@localhost:5432/brewnook
       REDIS_URL: redis://localhost:6379/0
 
